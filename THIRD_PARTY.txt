@@ -1,0 +1,2 @@
+Polices : voir fonts/LICENSES.txt (SIL Open Font License 1.1)
+QR code : qrcode-generator (MIT), utilisé seulement dans tools/make_qr.js

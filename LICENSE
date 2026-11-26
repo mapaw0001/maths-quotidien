@@ -1,0 +1,19 @@
+Maths Quotidien — Copyright (c) 2026, l'auteur du dépôt. TOUS DROITS RÉSERVÉS.
+
+Ce logiciel est une application personnelle. Sans autorisation écrite de
+l'auteur, il est interdit de le copier, le modifier, le redistribuer, le
+publier de nouveau ou de le vendre, en tout ou en partie. Le QR code des
+cours est donné par l'auteur aux personnes qu'il choisit ; il ne doit pas
+être partagé.
+
+Le contenu pédagogique (notions, exercices) est tiré de cours du BUT Réseaux
+et Télécommunications. Ces cours appartiennent à leurs auteurs et à
+l'établissement. Ils ne sont pas publiés en clair dans ce dépôt : ils sont
+chiffrés (app/content.enc.json). Un fichier chiffré publié reste toutefois
+téléchargeable : seule la clé, contenue dans le QR code, le protège.
+
+Éléments tiers, avec leurs propres licences : polices Lexend, Space Grotesk et
+JetBrains Mono (SIL Open Font License 1.1, voir fonts/LICENSES.txt).
+
+Le logiciel est fourni « tel quel », sans aucune garantie. Ceci n'est pas un
+avis juridique.

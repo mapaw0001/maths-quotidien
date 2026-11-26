@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="night">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<meta name="color-scheme" content="dark light">
+<title>Maths Quotidien</title>
+<meta name="theme-color" content="#070b12">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<link rel="stylesheet" href="../fonts/fonts.css">
+<style>
+/* ===== Thèmes : Oscillo nuit (défaut) et Oscillo jour ===== */
+:root,html[data-theme="night"]{
+  --bg:#070b12;--grid:rgba(140,190,255,.05);--surf:#0e1624;--surf2:#142034;--nav:#0a111c;
+  --line:rgba(140,190,255,.16);--line2:rgba(140,190,255,.24);--line3:#3a4d6b;--ctl:#5b7090;
+  --text:#eaf2ff;--text2:#cfdcef;--dim:#98adc8;--faint:#8197b3;
+  --c-cyan:#2de2c8;--c-mag:#ff6fae;--c-amb:#ffc857;--on-amb:#1b1300;--on-cyan:#04141a;
+  --good:#4ade80;--good-soft:rgba(74,222,128,.12);--on-good:#04140a;
+  --bad:#ff6b6b;--bad-soft:rgba(255,107,107,.12);--on-bad:#1c0505;
+  --k-use:#b79cff;--k-formula:#4db8ff;--k-steps:#4ade80;--k-demo:#ff9a4d;--k-trap:#ff6b6b;--k-keep:#ffc857;
+  --k-use-bg:rgba(183,156,255,.10);--k-formula-bg:rgba(77,184,255,.10);--k-steps-bg:rgba(74,222,128,.10);
+  --k-demo-bg:rgba(255,154,77,.10);--k-trap-bg:rgba(255,107,107,.10);--k-keep-bg:rgba(255,200,87,.10);
+  --veil:rgba(2,6,12,.62);
+  --acc:#2de2c8;--on-acc:#04141a;--acc-soft:rgba(45,226,200,.12);--acc-glow:rgba(45,226,200,.22);
+}
+html[data-theme="day"]{
+  --bg:#f4f8fc;--grid:rgba(40,90,150,.07);--surf:#ffffff;--surf2:#e8eff7;--nav:#ffffff;
+  --line:rgba(30,60,100,.16);--line2:rgba(30,60,100,.26);--line3:#9db0c8;--ctl:#6b7f99;
+  --text:#0c1a2c;--text2:#1d2f47;--dim:#475b75;--faint:#5a6e87;
+  --c-cyan:#077868;--c-mag:#b3135f;--c-amb:#8a5a00;--on-amb:#ffffff;--on-cyan:#ffffff;
+  --good:#15803d;--good-soft:rgba(21,128,61,.10);--on-good:#ffffff;
+  --bad:#c62828;--bad-soft:rgba(198,40,40,.08);--on-bad:#ffffff;
+  --k-use:#6d44c9;--k-formula:#0b62a8;--k-steps:#15803d;--k-demo:#b45309;--k-trap:#c62828;--k-keep:#8a5a00;
+  --k-use-bg:rgba(109,68,201,.07);--k-formula-bg:rgba(11,98,168,.07);--k-steps-bg:rgba(21,128,61,.07);
+  --k-demo-bg:rgba(180,83,9,.07);--k-trap-bg:rgba(198,40,40,.06);--k-keep-bg:rgba(138,90,0,.07);
+  --veil:rgba(12,26,44,.45);
+  --acc:#077868;--on-acc:#ffffff;--acc-soft:rgba(7,120,104,.10);--acc-glow:rgba(7,120,104,0);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{margin:0;color:var(--text);font-family:'Lexend',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:17px;line-height:1.6;text-align:left;
+  background-color:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px;background-attachment:fixed}
+h1,h2,h3,.disp{font-family:'Space Grotesk','Lexend',system-ui,sans-serif;margin:0}
+.mono{font-family:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace}
+button{font-family:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+svg{flex:none}
+#app{max-width:520px;margin:0 auto;min-height:100vh;min-height:100dvh}
+.screen{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+.main{flex:1;padding:14px 20px 28px}
+.main.tabs{padding-bottom:110px}
+.note{font-size:14px;color:var(--dim);line-height:1.5}
+.center{text-align:center}
+.kick{font:600 13px/1.3 'Lexend',system-ui,sans-serif;letter-spacing:.02em;color:var(--acc)}
+.kick.dim{color:var(--dim)}
+
+/* barre du haut : série, étoiles, jetons */
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:14px 20px 10px;display:flex;gap:8px;border-bottom:1px solid transparent}
+.chip{flex:1;min-width:0;height:40px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--surf);border:1px solid var(--line);border-radius:999px}
+.chip b{font:700 16px 'JetBrains Mono',ui-monospace,monospace;color:var(--text)}
+.chip{cursor:pointer;font:inherit;appearance:none;-webkit-appearance:none;height:auto;min-height:48px;padding:5px 6px;gap:6px}
+.chip .cc{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05;min-width:0}
+.chip .cl{font:500 14px/1.2 'Lexend',system-ui,sans-serif;color:var(--dim);white-space:nowrap}
+.chip:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:8px 0 2px;font:500 14px/1.3 'Lexend',system-ui,sans-serif;color:var(--text2)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend .n{color:var(--c-cyan)}.legend .d{color:var(--c-amb)}.legend .o{color:var(--c-cyan)}.legend .k{color:var(--dim)}
+.here{position:absolute;z-index:2;transform:translateX(-50%);background:var(--acc);color:var(--on-acc);font:700 14px/1 'Lexend',system-ui,sans-serif;padding:6px 12px;border-radius:999px;white-space:nowrap;pointer-events:none}
+.here:after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-5px;border:5px solid transparent;border-bottom:0;border-top-color:var(--acc)}
+.bal{display:flex;align-items:center;gap:12px}.bal .balnum{font:700 34px/1 'JetBrains Mono',ui-monospace,monospace;color:var(--c-mag)}
+.bal svg{color:var(--c-mag)}
+.tour{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column;padding:calc(18px + env(safe-area-inset-top)) 22px calc(20px + env(safe-area-inset-bottom));overflow:auto}
+.tour .tb{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px;max-width:460px;width:100%;margin:0 auto}
+.tour .big-ic{width:72px;height:72px;border-radius:22px;background:var(--acc-soft);border:1px solid var(--acc);color:var(--acc);display:flex;align-items:center;justify-content:center}
+.tour h2{font:700 30px/1.1 'Space Grotesk','Lexend',sans-serif;margin:4px 0 0}
+.tour p{font-size:18px;line-height:1.5;margin:0;color:var(--text2)}
+.tour .trow{display:flex;gap:12px;align-items:flex-start;font-size:17px;line-height:1.45;color:var(--text2)}
+.tour .trow svg{flex:none}.tour .trow b{color:var(--text)}
+.tour .dots{display:flex;gap:8px;justify-content:center;margin:6px 0 14px}.tour .dots i{width:9px;height:9px;border-radius:50%;background:var(--line2)}.tour .dots i.on{background:var(--acc);width:24px;border-radius:5px}
+.tour .tbtns{max-width:460px;width:100%;margin:0 auto}
+.chip.fire{color:var(--c-amb)}.chip.star{color:var(--c-cyan)}.chip.tok{color:var(--c-mag)}
+
+/* barre d'onglets */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--nav);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabbar .in{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));height:76px}
+.tab{position:relative;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--dim);font:500 12px/1 'Lexend',sans-serif;min-height:60px}
+.tab.on{color:var(--acc);font-weight:600}
+.tab.on::before{content:"";position:absolute;top:0;width:28px;height:3px;border-radius:0 0 3px 3px;background:var(--acc)}
+
+/* boutons */
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;border:0;border-radius:16px;padding:6px 18px;font:700 17px/1.25 'Space Grotesk','Lexend',sans-serif;background:var(--acc);color:var(--on-acc);box-shadow:0 0 28px var(--acc-glow);text-decoration:none;text-align:center}
+.btn:active{transform:scale(.985)}
+.btn.sec{background:transparent;color:var(--acc);border:1px solid var(--acc);box-shadow:none}
+.btn.ghost{background:var(--surf);color:var(--text);border:1px solid var(--ctl);box-shadow:none}
+.btn.red{background:var(--bad);color:var(--on-bad);box-shadow:none}
+.btn.ghost.red{background:var(--surf);color:var(--bad);border:1px solid var(--bad)}
+.btn.sm{width:auto;min-height:44px;padding:0 16px;font-size:15px;border-radius:12px;box-shadow:none}
+.btn:disabled,.btn[aria-disabled="true"]{background:var(--surf2);color:var(--faint);box-shadow:none;border:1px solid var(--line);cursor:not-allowed}
+.btn+.btn{margin-top:12px}
+.linkbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px;border:0;background:none;color:var(--dim);font:500 15px 'Lexend',sans-serif;padding:0}
+.linkrow{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;margin:6px 0;padding:0 14px;background:var(--surf);border:1px solid var(--line);border-radius:14px;color:var(--text);font:500 15px 'Lexend',sans-serif;text-align:left}
+.linkrow span{flex:1}.linkrow svg:first-child{color:var(--acc)}.linkrow svg:last-child{color:var(--dim)}
+
+/* cartes et sélecteurs */
+.card{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:12px 0}
+.card h3{font-size:18px;margin:0 0 6px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;padding:4px;background:var(--surf);border:1px solid var(--line);border-radius:14px}
+.seg button{height:44px;border:0;border-radius:10px;background:transparent;color:var(--dim);font:700 14px 'Space Grotesk','Lexend',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 6px}
+.seg button.on{background:var(--acc);color:var(--on-acc)}
+.pbar{height:6px;border-radius:3px;background:var(--surf2)}.pbar i{display:block;height:6px;border-radius:3px;background:var(--acc)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 12px;font:600 14px 'Lexend',sans-serif;border:1px solid var(--line2);color:var(--text2)}
+.pill.r{border-color:var(--c-amb);color:var(--c-amb)}.pill.l{border-color:var(--c-mag);color:var(--c-mag)}.pill.n{border-color:var(--c-cyan);color:var(--c-cyan)}
+.today h3{font-size:19px}
+.testbanner{background:var(--k-keep-bg);border:1px solid var(--k-keep);border-radius:12px;padding:8px 12px;font-size:14px;margin:12px 0}
+
+/* parcours */
+.path{position:relative;width:320px;margin:36px auto 0}
+@media (max-width:359px){.main.tabs{padding-left:8px;padding-right:8px}.path{zoom:.92}}
+.path svg.pl{position:absolute;left:0;top:0;pointer-events:none}
+.nd{position:absolute;width:52px;height:52px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--line2);background:var(--surf2);color:var(--dim)}
+.nd svg{width:26px;height:26px}
+.nd.new{border:3px solid var(--c-cyan);background:var(--surf);color:var(--c-cyan);box-shadow:0 0 0 6px rgba(45,226,200,.12);animation:pulse 2s infinite}
+.nd.due{border:3px solid var(--c-amb);background:var(--surf);color:var(--c-amb);box-shadow:0 0 0 6px rgba(255,200,87,.14);animation:pulse 2s infinite}
+.nd.relearn{border:3px solid var(--c-mag);background:var(--surf);color:var(--c-mag);box-shadow:0 0 0 6px rgba(255,111,174,.14);animation:pulse 2s infinite}
+.nd.ok{background:var(--c-cyan);border-color:var(--c-cyan);color:var(--on-cyan)}
+.nd.master{background:var(--c-amb);border-color:var(--c-amb);color:var(--on-amb)}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@media (prefers-reduced-motion:reduce){.nd{animation:none!important}}
+.pk{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--c-cyan)}
+.nl{position:absolute;display:flex;flex-direction:column;gap:3px;min-height:52px;justify-content:center}
+.nt{font:600 15px/1.25 'Lexend',sans-serif;color:var(--text)}
+.nl.dimmed .nt{color:var(--dim)}
+.ns{font:500 13px/1.2 'Lexend',system-ui,sans-serif;color:var(--dim)}
+.ns.new{color:var(--c-cyan)}.ns.due{color:var(--c-amb)}.ns.relearn{color:var(--c-mag)}
+.stars{display:flex;gap:2px;color:var(--c-amb)}
+.stars svg{width:16px;height:16px}.stars .e{color:var(--faint)}
+.part{margin:6px 0 0;padding:12px 14px;display:flex;align-items:center;gap:12px;border:1px dashed var(--line2);border-radius:14px;color:var(--dim);font-size:14px}
+.demo-tag{font:500 11px 'JetBrains Mono',monospace;background:var(--k-use-bg);color:var(--k-use);border:1px solid var(--k-use);border-radius:6px;padding:0 6px;margin-left:6px}
+
+/* séance */
+.sesstop{display:flex;align-items:center;gap:12px;padding:10px 20px 2px;min-height:60px}
+.close{width:44px;height:44px;margin-left:-10px;border:0;background:none;color:var(--dim);display:flex;align-items:center;justify-content:center}
+.bar{flex:1;height:10px;border-radius:5px;background:var(--surf2)}.bar i{display:block;height:10px;border-radius:5px;background:var(--acc);transition:width .3s}
+.count{font:700 14px 'JetBrains Mono',ui-monospace,monospace;color:var(--dim)}
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:10px;padding:2px 12px;font:600 14px 'Lexend',sans-serif;border:1px solid}
+.badge.use{color:var(--k-use);border-color:var(--k-use);background:var(--k-use-bg)}.badge.formula{color:var(--k-formula);border-color:var(--k-formula);background:var(--k-formula-bg)}
+.badge.steps{color:var(--k-steps);border-color:var(--k-steps);background:var(--k-steps-bg)}.badge.demo{color:var(--k-demo);border-color:var(--k-demo);background:var(--k-demo-bg)}
+.badge.trap{color:var(--k-trap);border-color:var(--k-trap);background:var(--k-trap-bg)}.badge.keep{color:var(--k-keep);border-color:var(--k-keep);background:var(--k-keep-bg)}
+.lesson h2{font:700 25px/1.2 'Space Grotesk','Lexend',sans-serif;margin:12px 0 8px}
+.lesson p,.lesson li{margin:8px 0;color:var(--text2)}
+.lesson b,.fsec b,.recapbox b{font-weight:600;color:var(--text)}
+.lesson ul,.lesson ol{padding-left:22px;margin:8px 0}
+.box{border-radius:14px;padding:12px 14px;margin:12px 0;text-align:center;font:600 19px/1.9 'Lexend',system-ui,sans-serif;color:var(--text);border:1px solid}
+.box.blue{background:var(--k-formula-bg);border-color:var(--k-formula)}
+.box.orange{background:var(--k-demo-bg);border-color:var(--k-demo)}
+.box.yellow{background:var(--k-keep-bg);border-color:var(--k-keep)}
+.box b{font-weight:700}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 4px;line-height:1.35}
+.frac>span:first-child{border-bottom:2px solid currentColor;padding:0 5px}
+.frac>span:last-child{padding:4px 5px 0}
+.rad{display:inline-block;border-top:2px solid currentColor;padding:3px 3px 0;margin-left:1px;line-height:1.3;vertical-align:middle}
+sup.s,sub.s{font-size:.78em;line-height:0}
+.lesson svg[role="img"],.fsec svg[role="img"]{box-shadow:0 0 0 1px var(--line2)}
+.q{font:600 21px/1.45 'Lexend',system-ui,sans-serif;margin:10px 0 18px;color:var(--text)}
+.opt{display:flex;align-items:center;gap:14px;width:100%;min-height:60px;margin:10px 0;padding:10px 14px;text-align:left;background:var(--surf);border:2px solid var(--ctl);border-radius:14px;color:var(--text);font:600 18px/1.35 'Lexend',sans-serif}
+.opt .ltr{flex:none;width:32px;height:32px;border-radius:8px;background:var(--surf2);display:flex;align-items:center;justify-content:center;font:700 14px 'JetBrains Mono',ui-monospace,monospace;color:var(--dim)}
+.opt.sel{border-color:var(--acc);background:var(--acc-soft)}.opt.sel .ltr{background:var(--acc);color:var(--on-acc)}
+.opt.good{border-color:var(--good);background:var(--good-soft)}.opt.good .ltr{background:var(--good);color:var(--on-good)}
+.opt.bad{border-color:var(--bad);background:var(--bad-soft)}.opt.bad .ltr{background:var(--bad);color:var(--on-bad)}
+.numrow{display:flex;gap:10px}
+.negbtn{width:64px;flex:none;height:60px;border:2px solid var(--ctl);border-radius:14px;background:var(--surf);font:700 28px 'JetBrains Mono',monospace;color:var(--text)}
+.numin{flex:1;min-width:0;height:60px;padding:0 12px;font:700 24px 'JetBrains Mono',ui-monospace,monospace;text-align:center;border:2px solid var(--ctl);border-radius:14px;background:var(--surf);color:var(--text)}
+.numin:focus{outline:none;border-color:var(--acc)}
+.recapbox{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:6px 14px;margin:12px 0;font-size:16px;color:var(--text2)}
+.recapbox p{margin:8px 0}
+.bottom{position:sticky;bottom:0;z-index:4;background:var(--bg);border-top:1px solid var(--line);padding:12px 20px calc(16px + env(safe-area-inset-bottom))}
+.fbwrap{max-height:46vh;overflow:auto}
+.fb{border-radius:14px;padding:12px 14px;margin:0 0 12px;font-size:16px;color:var(--text2);border:1px solid}
+.fb.good{background:var(--good-soft);border-color:var(--good)}.fb.bad{background:var(--bad-soft);border-color:var(--bad)}
+.fb .fb-t{font:700 20px 'Space Grotesk','Lexend',sans-serif;margin-bottom:2px}
+.fb.good .fb-t{color:var(--good)}.fb.bad .fb-t{color:var(--bad)}
+.fb .fb-e,.fb .fb-w{margin-top:8px}
+.big{width:84px;height:84px;margin:18px auto 10px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--acc-soft);color:var(--acc);border:2px solid var(--acc)}
+.big svg{width:40px;height:40px}
+.stat{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-weight:500}
+.stat:last-child{border-bottom:0}.stat b{font-family:'JetBrains Mono',monospace;font-weight:700}
+
+/* planning, fiches, réglages */
+.subtop{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;align-items:center;gap:6px;padding:10px 20px 8px;min-height:60px}
+.subtop h2{font-size:20px}
+.rowitem{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.rowitem .e{font-size:24px;width:32px;text-align:center}.rowitem .t{font-weight:600}.rowitem .d{font-size:14px;color:var(--dim)}
+.late{color:var(--c-mag)!important;font-weight:600}
+.fsec{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:6px 16px 14px;margin:14px 0;color:var(--text2)}
+.fsec p{margin:8px 0}
+.fhead{display:flex;align-items:center;gap:10px;margin:10px 0 4px}.fhead h3{font-size:19px;line-height:1.25}
+.fnum{flex:none;width:30px;height:30px;border-radius:50%;background:var(--acc);color:var(--on-acc);display:flex;align-items:center;justify-content:center;font:700 14px 'JetBrains Mono',monospace}
+.fl{display:inline-block;margin:10px 0 0;border-radius:8px;padding:0 10px;font:600 13px/1.7 'Lexend',sans-serif;border:1px solid}
+.fl.f{color:var(--k-formula);border-color:var(--k-formula);background:var(--k-formula-bg)}
+.fl.d{color:var(--k-demo);border-color:var(--k-demo);background:var(--k-demo-bg)}
+.fl.k{color:var(--k-keep);border-color:var(--k-keep);background:var(--k-keep-bg)}
+.fl.s{color:var(--k-steps);border-color:var(--k-steps);background:var(--k-steps-bg)}
+.fl.t{color:var(--k-trap);border-color:var(--k-trap);background:var(--k-trap-bg)}
+.item{display:flex;align-items:center;gap:12px;background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:10px 0}
+.item .ic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--surf2);display:flex;align-items:center;justify-content:center;color:var(--acc)}
+.item .tx{flex:1;min-width:0}.item .t{font:600 15px/1.3 'Lexend',sans-serif}.item .s{font-size:13px;color:var(--dim);line-height:1.4}
+.price{display:inline-flex;align-items:center;gap:6px;color:var(--c-mag);font:700 14px 'JetBrains Mono',monospace}
+.own{font:500 12px 'JetBrains Mono',monospace;letter-spacing:.06em;color:var(--good)}
+.avatar{display:flex;align-items:center;gap:16px;margin:6px 0 14px}
+.avatar .nm{flex:1;min-width:0}
+.name{width:100%;height:48px;padding:0 12px;border:1px solid var(--ctl);border-radius:12px;background:var(--surf);color:var(--text);font:600 18px 'Space Grotesk','Lexend',sans-serif}
+.name::placeholder{color:var(--faint)}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sbox{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.sbox .l{font-size:13px;color:var(--dim)}.sbox .v{font:700 26px/1.2 'JetBrains Mono',monospace;color:var(--text)}.sbox .v small{font-size:13px;color:var(--dim);font-weight:500}
+.wk{display:flex;gap:6px;margin-top:8px}.wk i{flex:1;height:8px;border-radius:4px;background:var(--surf2)}.wk i.on{background:var(--c-amb)}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:6px 14px;border-bottom:1px solid var(--line)}
+.srow:last-child{border-bottom:0}.srow .k{font-weight:500}.srow .v{color:var(--dim);font-size:15px;text-align:right}
+.rows{background:var(--surf);border:1px solid var(--line);border-radius:16px;margin:8px 0 14px}
+details>summary{cursor:pointer;font-weight:600;padding:12px 0;min-height:44px;list-style-position:inside}
+textarea{width:100%;min-height:80px;border:1px solid var(--line2);border-radius:12px;padding:10px;font:14px 'JetBrains Mono',monospace;background:var(--surf);color:var(--text)}
+select{height:44px;font:600 16px 'Lexend',sans-serif;padding:0 10px;border-radius:10px;border:1px solid var(--ctl);background:var(--surf2);color:var(--text)}
+a.btn{text-decoration:none}
+
+/* fenêtres */
+.overlay{position:fixed;inset:0;background:var(--veil);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--surf);border:1px solid var(--line2);border-bottom:0;border-radius:22px 22px 0 0;max-width:520px;width:100%;padding:20px 20px calc(22px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.sheet h3{font-size:21px;margin:0 0 6px}.sheet p{margin:8px 0}
+.toast.low{top:auto;bottom:calc(104px + env(safe-area-inset-bottom))}
+.toast{pointer-events:none;position:fixed;left:50%;top:calc(62px + env(safe-area-inset-top));transform:translateX(-50%);width:max-content;background:var(--surf2);color:var(--text);border:1px solid var(--acc);border-radius:12px;padding:10px 16px;font-size:15px;z-index:30;max-width:calc(100% - 40px);text-align:center;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="mq.js"></script>
+<script src="engine.js"></script>
+<script src="lib.js"></script>
+<script>
+MQ.run(function () {
+(function () {
+  "use strict";
+  var E = window.Engine;
+  var NOTIONS = window.NOTIONS || [];
+  var COURSE = window.COURSE || {};   // titres des cours et fiches : fournis par le contenu (chiffré sur le site public)
+  function subjOf(n) { return (n && n.subj) || "maths"; }
+  function listOf(s) { return NOTIONS.filter(function (n) { return subjOf(n) === s; }); }
+  function curSubj() { return V.tab === "elec" ? "elec" : "maths"; }
+  function planFor(s, t) { return E.todayPlan(state, listOf(s), t, CAP, s); }
+  var APP_URL = window.MQ.appUrl;
+  var APP_VERSION = window.MQ ? window.MQ.version : "3.1";
+  var KEY = "maths-quotidien-v1";
+  var CAP = 6;        // révisions max par séance (≈ 10 minutes)
+  var SERIES_N = 5;   // exercices par série d'apprentissage
+  var TAGS = {
+    use: ["🎯", "À quoi ça sert"], formula: ["🔵", "Formule"], steps: ["🟢", "Méthode"],
+    demo: ["🟠", "Exemple"], trap: ["🔴", "Piège"], keep: ["🟡", "À retenir"]
+  };
+  /* Boutique */
+  var FICHES = COURSE.fiches || [];
+  var ACC = {
+    cyan: { name: "Cyan", price: 0, night: "#2de2c8", day: "#077868" },
+    magenta: { name: "Magenta", price: 40, night: "#ff6fae", day: "#b3135f" },
+    amber: { name: "Ambre", price: 40, night: "#ffc857", day: "#8a5a00" }
+  };
+  var ROW = 96, PW = 320, XS = [56, 140];
+
+  var app = document.getElementById("app");
+  var state = E.newState();
+  var cloud = { db: null, uid: null, status: "local", saving: false, dirty: false, timer: null };
+  var V = { draft: {}, tab: "path", sub: null, chap: 1, chapE: 1, shop: "fiches", sheet: null, dialog: null, pending: null, session: null, toast: null, toastT: null, backupText: "", restoreMsg: "", open: {}, dev: 0, tour: null };
+  var storageOk = true;
+  try { localStorage.setItem(KEY + "-t", "1"); localStorage.removeItem(KEY + "-t"); } catch (e) { storageOk = false; }
+  try { V.dev = parseInt(localStorage.getItem(KEY + "-dev"), 10) || 0; } catch (e) { V.dev = 0; }
+  function saveDev() { try { localStorage.setItem(KEY + "-dev", String(V.dev)); } catch (e) {} }
+
+  /* ---------- icônes ---------- */
+  var IC = {
+    help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.5-1.2 1-1.2 1.9"/><path d="M12 17.2h.01"/>',
+    flame: '<path d="M12 3c.5 3.5 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2 1-3.2 2-4.2.2 1.2.8 1.8 1.5 2C11 8 11 5.5 12 3z"/>',
+    star: '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z"/>',
+    token: '<circle cx="12" cy="12" r="8.5"/><path d="M7 12c1.5-4 3-4 4.5 0s3 4 4.5 0"/>',
+    check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+    play: '<path d="M8 5.5v13l11-6.5z"/>',
+    lock: '<path d="M7 11V8a5 5 0 0 1 10 0v3"/><path d="M6 11h12v9H6z"/>',
+    hourglass: '<path d="M7 4h10M7 20h10"/><path d="M8 4v3a4 4 0 0 0 2 3.4L12 12l-2 1.6A4 4 0 0 0 8 17v3M16 4v3a4 4 0 0 1-2 3.4L12 12l2 1.6A4 4 0 0 1 16 17v3"/>',
+    refresh: '<path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v4h-4"/>',
+    crown: '<path d="M4 18h16"/><path d="M5 18L4 8l5 4 3-6 3 6 5-4-1 10"/>',
+    bag: '<path d="M5 9h14l-1.2 10.5a1 1 0 0 1-.9.9H7.2a1 1 0 0 1-1-.9L5 9z"/><path d="M9 9V8a3 3 0 0 1 6 0v1"/>',
+    book: '<path d="M5 4.5h10a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3V4.5z"/><path d="M5 17a3 3 0 0 1 3-3h10"/>',
+    bolt: '<path d="M13.5 3L5.5 13.5h6L10.5 21l8-10.5h-6z"/>',
+    user: '<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M4.5 20c.5-3.6 3.6-5.5 7.5-5.5s7 1.9 7.5 5.5"/>',
+    close: '<path d="M6 6l12 12M18 6L6 18"/>',
+    arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    back: '<path d="M15 6l-6 6 6 6"/>',
+    cal: '<path d="M5 6h14v14H5z"/><path d="M5 10h14M9 4v4M15 4v4"/>',
+    shield: '<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/>',
+    doc: '<path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 12h6M10 16h6"/>',
+    bulb: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',
+    palette: '<path d="M12 3a9 9 0 1 0 0 18c1.2 0 2-.9 2-2 0-1.6 1-2 2-2h2a3 3 0 0 0 3-3c0-5.5-4-11-9-11z"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16" cy="11" r="1"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+    moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+    auto: '<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17"/>',
+    trophy: '<path d="M8 4h8v6a4 4 0 0 1-8 0V4z"/><path d="M8 6H5v2a3 3 0 0 0 3 3M16 6h3v2a3 3 0 0 1-3 3M12 14v4M9 20h6"/>'
+  };
+  var FILLED = { play: 1 };
+  function ic(name, size, extra) {
+    var f = FILLED[name] ? 'fill="currentColor" stroke="none"' : 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+    return '<svg width="' + (size || 24) + '" height="' + (size || 24) + '" viewBox="0 0 24 24" ' + f + ' aria-hidden="true"' + (extra || "") + ">" + IC[name] + "</svg>";
+  }
+  function starIcon(full) {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true" class="' + (full ? "" : "e") + '" ' + (full ? 'fill="currentColor"' : 'fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"') + '>' + IC.star + "</svg>";
+  }
+  function starsRow(n) { return '<div class="stars" aria-hidden="true">' + starIcon(n >= 1) + starIcon(n >= 2) + starIcon(n >= 3) + "</div>"; }
+
+  /* ---------- thème et couleur ---------- */
+  var mq = null;
+  try { mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null; } catch (e) { mq = null; }
+  function effTheme() {
+    var t = state.settings.theme;
+    if (t === "auto") return (mq && !mq.matches) ? "day" : "night";
+    return t === "day" ? "day" : "night";
+  }
+  function hexA(hex, a) {
+    var n = parseInt(hex.slice(1), 16);
+    return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + a + ")";
+  }
+  function applyTheme() {
+    var th = effTheme(), a = ACC[state.settings.accent] || ACC.cyan, c = th === "day" ? a.day : a.night, st = document.documentElement.style;
+    document.documentElement.setAttribute("data-theme", th);
+    st.setProperty("--acc", c);
+    st.setProperty("--on-acc", th === "day" ? "#ffffff" : "#04141a");
+    st.setProperty("--acc-soft", hexA(c, th === "day" ? 0.1 : 0.12));
+    st.setProperty("--acc-glow", hexA(c, th === "day" ? 0 : 0.22));
+  }
+  if (mq) { var onMq = function () { if (state.settings.theme === "auto") { applyTheme(); } }; try { mq.addEventListener("change", onMq); } catch (e) { try { mq.addListener(onMq); } catch (e2) {} } }
+
+  /* ---------- utilitaires ---------- */
+  function today() { return E.dayIndex() + (V.dev || 0); }
+  function byId(id) { for (var i = 0; i < NOTIONS.length; i++) if (NOTIONS[i].id === id) return NOTIONS[i]; return null; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function plural(n, s, p) { return n + " " + (n > 1 ? p : s); }
+  var SUPMAP = { "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9", "⁺": "+", "⁻": "−", "ᵐ": "m", "ⁿ": "n", "ˣ": "x" };
+  var SUBMAP = { "₀": "0", "₁": "1", "₂": "2", "₃": "3", "₄": "4", "₅": "5", "₆": "6", "₇": "7", "₈": "8", "₉": "9" };
+  /* Remplace les petits exposants/indices Unicode (difficiles à lire) par de vrais exposants plus grands. */
+  function R(h) {
+    return String(h).split(/(<svg[\s\S]*?<\/svg>)/).map(function (part, i) { return i % 2 ? part : nb(R1(part)); }).join("");
+  }
+  /* Espace insécable avant ? ! : ; (typographie française) : le « ? » ne se retrouve jamais seul au début d'une ligne. */
+  function nb(h) { return String(h).replace(/(^|>)([^<]+)/g, function (m, a, t) { return a + t.replace(/ ([?!:;])/g, "\u00a0$1"); }); }
+  function R1(h) {
+    return String(h).replace(/\^\(([^()]*)\)/g, "<sup class='s'>$1</sup>").replace(/_\(([^()]*)\)/g, "<sub class='s'>$1</sub>").replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ᵐⁿˣ]+/g, function (m) { return '<sup class="s">' + m.split("").map(function (c) { return SUPMAP[c]; }).join("") + "</sup>"; })
+      .replace(/[₀-₉]+/g, function (m) { return '<sub class="s">' + m.split("").map(function (c) { return SUBMAP[c]; }).join("") + "</sub>"; });
+  }
+  function canon(o) { return JSON.stringify(o, function (k, v) { if (v && typeof v === "object" && !Array.isArray(v)) { var r = {}; Object.keys(v).sort().forEach(function (x) { r[x] = v[x]; }); return r; } return v; }); }
+  var lastTap = 0;
+  function tooFast() { var n = Date.now(); if (n - lastTap < 350) return true; lastTap = n; return false; }
+  function typing() { var a = document.activeElement; return !!a && (a.id === "pname" || a.id === "rs" || a.id === "numin") && app.contains(a); }
+  /* Rendu déclenché en arrière-plan (synchro, retour sur l'appli) : on ne touche pas à ce que la personne est en train d'écrire. */
+  function renderBg() { if (!typing()) render(); }
+  function setToast(msg) {
+    V.toast = msg; if (V.toastT) clearTimeout(V.toastT);
+    V.toastT = setTimeout(function () {
+      if (V.toast !== msg) return;
+      V.toast = null;
+      if (typing()) { var te = app.querySelector(".toast"); if (te) te.remove(); } else render();
+    }, 2800);
+  }
+  function showToast(msg) { setToast(msg); render(); }
+  function streakNow() { return E.streakNow(state, today()); }
+  function tokens() { return E.tokensNow(state); }
+
+  /* ---------- sauvegarde (appareil + compte) ---------- */
+  function loadLocal() {
+    try { var raw = localStorage.getItem(KEY); if (raw) return E.normalizeState(JSON.parse(raw)); } catch (e) {}
+    return null;
+  }
+  var noSave = false;
+  function store() {
+    if (noSave) return;
+    try { localStorage.setItem(KEY, JSON.stringify(state)); storageOk = true; } catch (e) { storageOk = false; }
+  }
+  function persist() {
+    state.updatedAt = Date.now();
+    store();
+    cloud.dirty = true;
+    scheduleFlush();
+  }
+  function scheduleFlush() {
+    if (!cloud.db || cloud.timer) return;
+    cloud.timer = setTimeout(function () { cloud.timer = null; sync(); }, 1200);
+  }
+  function withTimeout(p, ms) {
+    return Promise.race([p, new Promise(function (_, rej) { setTimeout(function () { rej(new Error("timeout")); }, ms); })]);
+  }
+  /* Lit le compte, fusionne avec l'appareil (rien n'est perdu), puis réécrit seulement si besoin. */
+  function sync() {
+    if (!cloud.db || cloud.saving) return;
+    cloud.saving = true; cloud.dirty = false;
+    var path = "data/users/" + cloud.uid + "/progress", changed = false;
+    withTimeout(cloud.db.doc(path).get(), 10000).then(function (snap) {
+      var remote = null;
+      try { remote = snap && snap.exists ? E.normalizeState(JSON.parse(snap.data().json)) : null; } catch (e) { remote = null; }
+      if (remote) {
+        var before = canon(state);
+        state = E.merge(state, remote);
+        if (canon(state) !== before) { store(); changed = true; }
+        if (canon(state) === canon(remote)) return null;
+      }
+      return withTimeout(cloud.db.doc(path).set({ json: JSON.stringify(state), updatedAt: state.updatedAt }), 10000);
+    }).then(function () { cloud.status = "cloud"; })
+      .catch(function () { cloud.status = "error"; cloud.dirty = true; })
+      .then(function () {
+        cloud.saving = false;
+        if (changed && !V.session) renderBg();
+        else if (!V.session && V.tab === "profile") renderBg();
+        if (cloud.dirty && cloud.status !== "error") scheduleFlush();
+      });
+  }
+  function initCloud() {
+    if (cloud.initing || cloud.db) return;
+    if (typeof claude === "undefined" || !claude || typeof claude.use !== "function") return;
+    cloud.initing = true;
+    withTimeout(Promise.all([claude.use("user"), claude.use("db")]), 10000).then(function (r) {
+      if (!r[0] || !r[1]) return;
+      return r[0].id().then(function (uid) {
+        if (!uid) return;
+        cloud.uid = uid; cloud.db = r[1];
+        sync();
+      });
+    }).catch(function () {}).then(function () { cloud.initing = false; });
+  }
+
+  /* ---------- série, jetons, récompenses ---------- */
+  function touch() {
+    if (V.dev) return; // mode test : les jours simulés ne donnent ni série ni jetons
+    var S = V.session, r = E.touchStreak(state, today());
+    if (!r) return;
+    if (S) S.stats.tok += r.tokens;
+    var msg = "+" + r.tokens + " jetons · série de " + plural(state.streak.count, "jour", "jours");
+    if (r.bonus) msg = "Bonus 7 jours ! +" + r.tokens + " jetons";
+    if (r.shield) msg = "Bouclier utilisé : ta série est sauvée. +" + r.tokens + " jetons";
+    if (!(S && !r.bonus && !r.shield)) setToast(msg); // +10 jetons : affiché à la fin de la séance, pour ne pas masquer la correction
+  }
+
+  /* ---------- navigation de séance ---------- */
+  function makeCur(ex) {
+    var cur = { ex: ex, sel: null, input: "", checked: false, ok: null, msg: "", showRecap: false, chosen: "" };
+    if (ex.type === "qcm") cur.opts = shuffle(ex.options.map(function (o, i) { return { t: o.t, why: o.why || "", correct: i === ex.a }; }));
+    return cur;
+  }
+  function beginSession(queue) {
+    V.sheet = null;
+    V.session = { queue: queue, qi: 0, step: null, stats: { right: 0, wrong: 0, xp: 0, tok: 0, reviews: 0, learned: [], failed: [] } };
+    enterStep();
+  }
+  function startToday(s) {
+    var plan = planFor(s || "maths", today()), q = [];
+    plan.reviews.forEach(function (id) { q.push({ kind: "review", id: id }); });
+    plan.relearn.forEach(function (id) { q.push({ kind: "learn", id: id, relearn: true }); });
+    if (plan.newId) q.push({ kind: "learn", id: plan.newId, relearn: false });
+    if (q.length) beginSession(q);
+  }
+  function enterStep() {
+    var S = V.session, it = S.queue[S.qi], n = it && byId(it.id);
+    if (!it || !n) { finishSession(); return; }
+    if (it.kind === "view") { S.step = { kind: "view", id: it.id, phase: "lesson", ci: 0, cards: n.cards }; }
+    else if (it.kind === "review") {
+      if (!n.exercises.length) { S.qi++; enterStep(); return; }
+      S.step = { kind: "review", id: it.id, practice: !!it.practice, cur: makeCur(E.pickExercises(n, state, 1)[0]) };
+    } else {
+      S.step = { kind: "learn", id: it.id, relearn: !!it.relearn, phase: "lesson", ci: 0, cards: null, series: null, errors: it.mistake ? [it.mistake] : [], roundErrors: [] };
+      S.step.cards = buildCards(S.step);
+    }
+    render(); window.scrollTo(0, 0);
+  }
+  function errorCard(list) {
+    var h = "<p>Voilà ce qui t'a fait trébucher. On reprend le cours en partant de là.</p><div class='errs'>";
+    list.slice(0, 3).forEach(function (e) {
+      h += "<div class='recapbox'><p><b>Question :</b></p><p>" + e.q + "</p><p>Ta réponse : <b>" + R(esc(e.chosen)) + "</b></p>" + (e.good ? "<p>Bonne réponse : <b>" + R(esc(e.good)) + "</b></p>" : "") + (e.why ? "<p>" + R(esc(e.why)) + "</p>" : "") + "<p>" + e.explain + "</p></div>";
+    });
+    return { tag: "trap", title: list.length > 1 ? "Tes erreurs" : "Ton erreur", html: h + "</div>" };
+  }
+  function buildCards(st) {
+    var n = byId(st.id);
+    return st.errors && st.errors.length ? [errorCard(st.errors)].concat(n.cards) : n.cards.slice();
+  }
+  function nextStep() { var S = V.session; S.qi++; if (S.qi >= S.queue.length) finishSession(); else enterStep(); }
+  function finishSession() {
+    var S = V.session;
+    if (!S) return;
+    S.step = null;
+    if (S.stats.right + S.stats.wrong === 0) { V.session = null; }
+    render(); window.scrollTo(0, 0);
+  }
+  function closeSession() { if (cloud.db && cloud.dirty) { if (cloud.timer) { clearTimeout(cloud.timer); cloud.timer = null; } sync(); } V.session = null; V.dialog = null; render(); window.scrollTo(0, 0); }
+  function startSeries(st) {
+    var n = byId(st.id);
+    st.round = (st.round || 0) + 1;
+    var must = (st.roundErrors || []).map(function (e) { return e.exId; });
+    st.series = { items: E.pickExercises(n, state, SERIES_N, null, must), idx: 0, mistakes: 0 };
+    st.roundErrors = [];
+    st.phase = "series";
+    st.cur = makeCur(st.series.items[0]);
+  }
+
+  /* ---------- réponses ---------- */
+  function errInfo(ex, cur) {
+    var good = ex.type === "qcm" ? cur.opts.filter(function (o) { return o.correct; })[0].t : String([].concat(ex.a)[0]).replace(".", ",");
+    return { exId: ex.id, q: ex.q, chosen: cur.chosen, good: good, why: ex.type === "qcm" ? cur.opts[cur.sel].why : "", explain: ex.explain };
+  }
+  function doCheck() {
+    var S = V.session, st = S && S.step; if (!st || !st.cur || st.cur.checked) return;
+    var cur = st.cur, ex = cur.ex, ok;
+    if (ex.type === "num") {
+      if (!cur.input.trim()) return;
+      if (E.expectsNumber(ex) && !E.isNumericInput(cur.input)) { showToast("Écris seulement le nombre, par exemple 3 ou −2,5."); return; }
+      ok = E.checkNum(ex, cur.input); cur.chosen = cur.input.trim();
+    }
+    else { if (cur.sel === null) return; ok = cur.opts[cur.sel].correct; cur.chosen = cur.opts[cur.sel].t; }
+    cur.checked = true; cur.ok = ok;
+    cur.msg = ["Bravo !", "Exact !", "Bien joué !", "Parfait !"][(S.stats.right + S.stats.wrong) % 4];
+    E.markSeen(state, st.id, ex.id);
+    var practice = st.kind === "review" && st.practice;
+    if (ok) { S.stats.right++; if (!practice) { state.xp += 10; S.stats.xp += 10; } } else { S.stats.wrong++; }
+    if (st.kind === "review" && !practice) {
+      E.review(state, st.id, ok, today());
+      if (ok) S.stats.reviews++;
+      else {
+        S.stats.failed.push(st.id);
+        var item = { kind: "learn", id: st.id, relearn: true, mistake: errInfo(ex, cur) }, at = -1;
+        for (var qi = S.qi + 1; qi < S.queue.length; qi++) { if (S.queue[qi].kind === "learn" && !S.queue[qi].relearn) { at = qi; break; } }
+        if (at < 0) S.queue.push(item); else S.queue.splice(at, 0, item);
+      }
+    } else if (st.kind === "learn" && !ok) {
+      st.series.mistakes++;
+      var info = errInfo(ex, cur);
+      st.roundErrors.push(info);
+      if (!st.errors.some(function (e) { return e.exId === info.exId; })) st.errors.push(info);
+    }
+    touch();
+    persist(); render();
+  }
+  function doContinue() {
+    var S = V.session, st = S && S.step; if (!st) return;
+    if (st.kind === "review") { nextStep(); return; }
+    var sr = st.series; sr.idx++;
+    if (sr.idx >= sr.items.length) st.phase = sr.mistakes > 0 ? "roundfail" : "understand";
+    else st.cur = makeCur(sr.items[sr.idx]);
+    render(); window.scrollTo(0, 0);
+  }
+  function completeLearn() {
+    var S = V.session, st = S.step, t = today();
+    E.learn(state, st.id, t);
+    if (!st.relearn) E.markNew(state, t, subjOf(byId(st.id)));
+    state.xp += 20; S.stats.xp += 20; S.stats.learned.push(st.id);
+    touch();
+    persist(); nextStep();
+  }
+
+  /* ---------- écrans de séance ---------- */
+  function sessionTop(frac, count) {
+    return '<div class="sesstop"><button class="close" data-act="quit" aria-label="Quitter">' + ic("close", 24) + '</button><div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(frac * 100) + '" aria-label="Progression"><i style="width:' + Math.round(frac * 100) + '%"></i></div>' + (count ? '<span class="count">' + count + "</span>" : "") + "</div>";
+  }
+  function renderLesson() {
+    var S = V.session, st = S.step, c = st.cards[st.ci], last = st.ci === st.cards.length - 1, tg = TAGS[c.tag] || TAGS.use, n = byId(st.id);
+    var label = st.kind === "view" ? (last ? "Terminer" : "Continuer") : (last ? "C'est parti : exercices" : "Continuer");
+    var head = st.kind === "learn" && st.relearn ? "On réapprend" : (st.kind === "learn" ? "Nouvelle notion" : "Cours");
+    return '<div class="screen">' + sessionTop((st.ci + 1) / (st.cards.length + 1), (st.ci + 1) + " / " + st.cards.length) +
+      '<div class="main lesson"><div class="kick">' + R(esc(n.title)) + '</div><div class="note">' + head + "</div>" +
+      '<div style="margin-top:12px"><span class="badge ' + c.tag + '">' + tg[0] + " " + tg[1] + "</span></div><h2>" + R(esc(c.title)) + "</h2>" + R(c.html) + "</div>" +
+      '<div class="bottom">' + (st.ci > 0 ? '<button class="linkbtn" data-act="lesson-back">' + ic("back", 18) + " Carte précédente</button>" : "") +
+      '<button class="btn" data-act="lesson-next">' + label + ic("arrow", 20) + "</button></div></div>";
+  }
+  function renderExercise() {
+    var S = V.session, st = S.step, cur = st.cur, ex = cur.ex, n = byId(st.id), frac, head, count = "";
+    if (st.kind === "review") { frac = S.qi / Math.max(1, S.queue.length); head = st.practice ? "Entraînement" : "Révision"; count = (S.qi + 1) + " / " + S.queue.length; }
+    else { frac = (st.series.idx + (cur.checked ? 1 : 0)) / st.series.items.length; head = "Série " + (st.round || 1) + " · question " + (st.series.idx + 1) + "/" + st.series.items.length; count = (st.series.idx + 1) + " / " + st.series.items.length; }
+    var body = '<div class="kick">' + R(esc(n.title)) + '</div><div class="note">' + head + '</div><div class="q">' + R(ex.q) + "</div>";
+    if (st.kind === "review" && !cur.checked) {
+      body += '<button class="linkbtn" style="justify-content:flex-start" data-act="toggle-recap">' + ic("bulb", 18) + " " + (cur.showRecap ? "Cacher le rappel" : "Revoir le cours vite") + "</button>";
+      if (cur.showRecap) body += '<div class="recapbox">' + R(n.recap) + "</div>";
+    }
+    if (ex.type === "qcm") {
+      cur.opts.forEach(function (o, i) {
+        var cls = "opt";
+        if (cur.checked) { if (o.correct) cls += " good"; else if (i === cur.sel) cls += " bad"; }
+        else if (i === cur.sel) cls += " sel";
+        body += '<button class="' + cls + '" data-act="pick" data-i="' + i + '" aria-pressed="' + (i === cur.sel ? "true" : "false") + '"' + (cur.checked ? " disabled" : "") + '><span class="ltr">' + "ABCDEF".charAt(i) + "</span><span>" + R(esc(o.t)) + "</span></button>";
+      });
+    } else {
+      body += '<div class="numrow"><button class="negbtn" data-act="neg" aria-label="Signe moins"' + (cur.checked ? " disabled" : "") + '>−</button><input class="numin" id="numin" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="Ta réponse" aria-label="Ta réponse" value="' + esc(cur.input) + '"' + (cur.checked ? " disabled" : "") + "></div>";
+    }
+    var bottom, inlineCheck = ex.type === "num" && !cur.checked;
+    if (inlineCheck) {
+      body += '<button class="btn" id="checkbtn" data-act="check" style="margin-top:14px"' + (cur.input.trim() ? "" : " disabled") + ">Vérifier</button>";
+      bottom = "";
+    } else if (!cur.checked) {
+      bottom = '<button class="btn" id="checkbtn" data-act="check"' + (cur.sel !== null ? "" : " disabled") + ">Vérifier</button>";
+    } else if (cur.ok) {
+      bottom = '<div class="fb good"><div class="fb-t">' + cur.msg + '</div></div><button class="btn" data-act="continue">Continuer' + ic("arrow", 20) + "</button>";
+    } else {
+      var good = ex.type === "qcm" ? cur.opts.filter(function (o) { return o.correct; })[0].t : String([].concat(ex.a)[0]).replace(".", ",");
+      var why = ex.type === "qcm" && cur.opts[cur.sel].why ? '<div class="fb-w">' + R(esc(cur.opts[cur.sel].why)) + "</div>" : "";
+      var tail = st.kind === "review" && !st.practice ? "<div class='fb-w'><b>Cette notion repart à zéro.</b> On la revoit juste après.</div>" : "";
+      bottom = '<div class="fbwrap"><div class="fb bad"><div class="fb-t">Pas tout à fait</div><div>Bonne réponse : <b>' + R(esc(good)) + "</b></div>" + why + '<div class="fb-e">' + R(ex.explain) + "</div>" + tail + '</div></div><button class="btn red" data-act="continue">Continuer' + ic("arrow", 20) + "</button>";
+    }
+    return '<div class="screen">' + sessionTop(frac, count) + '<div class="main">' + body + "</div>" + (bottom ? '<div class="bottom">' + bottom + "</div>" : "") + "</div>";
+  }
+  function renderRoundFail() {
+    var st = V.session.step, m = st.series.mistakes, list = "";
+    st.roundErrors.forEach(function (e) {
+      list += '<div class="recapbox"><p><b>Question :</b></p><p>' + R(e.q) + "</p><p>Ta réponse : <b>" + R(esc(e.chosen)) + "</b></p><p>Bonne réponse : <b>" + R(esc(e.good)) + '</b></p><p class="note">' + R(e.explain) + "</p></div>";
+    });
+    var stuck = (st.round || 1) >= 2;
+    var b1 = '<button class="btn" data-act="series-again">Recommencer la série</button>', b2 = '<button class="btn sec" data-act="relesson">Revoir le cours à partir de mes erreurs</button>';
+    return '<div class="screen">' + sessionTop(0.8) + '<div class="main"><div class="center"><div class="big" style="color:var(--c-amb);border-color:var(--c-amb);background:var(--k-keep-bg)">' + ic("refresh", 40) + '</div><h2>' + plural(m, "erreur", "erreurs") + " dans cette série</h2></div>" +
+      '<p style="color:var(--text2)">Pour valider la notion, il faut une série <b>sans aucune faute</b>.</p>' + (stuck ? '<p style="color:var(--text2)">Tu bloques un peu : le plus efficace est de <b>revoir le cours</b> en partant de tes erreurs.</p>' : '<p style="color:var(--text2)">Voilà tes erreurs. Relis-les, puis on recommence.</p>') +
+      '<div class="errs">' + list + "</div></div>" +
+      '<div class="bottom">' + (stuck ? b2.replace("btn sec", "btn") + b1.replace('class="btn"', 'class="btn sec"') : b1 + b2) + "</div></div>";
+  }
+  function renderUnderstand() {
+    return '<div class="screen">' + sessionTop(1) + '<div class="main center"><div class="big">' + ic("check", 40) + '</div><h2>Série sans faute !</h2><p class="q">As-tu <b>compris</b> la notion ?</p><p class="note">Sois honnête : si tu hésites, on revoit le cours.</p></div>' +
+      '<div class="bottom"><button class="btn" data-act="understood">Oui, j\'ai compris</button><button class="btn ghost red" data-act="relesson">Pas vraiment, je revois le cours</button></div></div>';
+  }
+  function nextDueText() {
+    var best = null;
+    Object.keys(state.notions).forEach(function (id) { var n = state.notions[id]; if (n.status === "learned" && (best === null || n.due < best)) best = n.due; });
+    if (best === null) return "";
+    var t = today();
+    if (best <= t) return "Il reste des révisions à faire aujourd'hui ou demain.";
+    return "Prochaine révision : <b>" + E.fmtDay(best) + "</b>.";
+  }
+  function renderResult() {
+    var S = V.session, s = S.stats, t = today();
+    var learned = s.learned.map(function (id) { var n = byId(id); return n ? n.emoji + " " + R(esc(n.title)) : ""; }).join("<br>");
+    return '<div class="screen"><div class="main center"><div class="big">' + ic("trophy", 40) + '</div><h2>Séance terminée !</h2>' +
+      '<div class="card" style="text-align:left"><div class="stat"><span>Bonnes réponses</span><b>' + s.right + '</b></div><div class="stat"><span>Erreurs</span><b>' + s.wrong + '</b></div><div class="stat"><span>Jetons gagnés</span><b style="color:var(--c-mag)">+' + s.tok + '</b></div><div class="stat"><span>Série</span><b>' + plural(streakNow(), "jour", "jours") + "</b></div></div>" +
+      (learned ? '<p style="color:var(--text2)"><b>Notion apprise :</b><br>' + learned + "</p>" : "") +
+      (s.failed.length ? '<p style="color:var(--text2)">Les notions ratées repartent à zéro. Elles reviendront vite.</p>' : "") +
+      '<p style="color:var(--text2)">' + nextDueText() + "</p></div>" +
+      '<div class="bottom"><button class="btn" data-act="home">Retour à l\'accueil</button></div></div>';
+  }
+  function renderSession() {
+    var S = V.session, st = S.step;
+    if (!st) return renderResult();
+    if (st.kind === "view" || st.phase === "lesson") return renderLesson();
+    if (st.phase === "roundfail") return renderRoundFail();
+    if (st.phase === "understand") return renderUnderstand();
+    return renderExercise();
+  }
+
+  /* ---------- barre du haut et onglets ---------- */
+  function topbar() {
+    var t = today(), sn = E.streakNow(state, t), ts = E.totalStars(state, NOTIONS), tk = tokens();
+    function chip(cls, k, icon, num, label, aria) { return '<button class="chip ' + cls + '" data-act="explain" data-k="' + k + '" aria-label="' + aria + ' : touche pour comprendre">' + ic(icon, 20) + '<span class="cc"><b>' + num + '</b><span class="cl">' + label + "</span></span></button>"; }
+    return '<div class="top">' + chip("fire", "streak", "flame", sn, "série", "Série de " + plural(sn, "jour", "jours")) +
+      chip("star", "stars", "star", ts, ts === 1 ? "étoile" : "étoiles", plural(ts, "étoile", "étoiles")) +
+      chip("tok", "tokens", "token", tk, tk === 1 ? "jeton" : "jetons", plural(tk, "jeton", "jetons")) + "</div>";
+  }
+  function explain(k) {
+    var t = today(), sn = streakNow(), buttons = [{ label: "Compris", act: "dlg-cancel" }];
+    if (k === "streak") V.dialog = { title: "Ta série", text: "<b>La série = les jours d'affilée</b> où tu t'es entraîné.<br><br>Fais <b>au moins 1 question par jour</b> pour la garder.<br><br>Tu as oublié un jour ? Un <b>bouclier</b> (Boutique) sauve ta série.<br><br>Ta série : <b>" + plural(sn, "jour", "jours") + "</b> · record : <b>" + plural(Math.max(state.streak.best, sn), "jour", "jours") + "</b>.", buttons: buttons };
+    else if (k === "stars") V.dialog = { title: "Tes étoiles", text: "<b>★ = ta maîtrise d'une notion</b> (3 étoiles au maximum).<br><br>1 étoile : notion apprise.<br>2 étoiles : révisée avec succès.<br>3 étoiles : bien retenue.<br><br>Tu te trompes à une révision ? La notion retombe à 0 étoile : tu la réapprends vite et tu repars.", buttons: buttons };
+    else V.dialog = { title: "Tes jetons", text: "<b>Les jetons sont ta monnaie.</b><br><br>Tu en gagnes <b>+" + E.DAILY + "</b> chaque jour où tu fais une séance, et <b>+" + E.WEEK_BONUS + "</b> de bonus tous les 7 jours de série.<br><br>Tu les dépenses dans la <b>Boutique</b> : fiches de révision, bouclier de série, couleurs.", buttons: V.tab === "shop" && !V.sub ? buttons : [{ label: "Aller à la Boutique", act: "go-shop" }, { label: "Compris", act: "dlg-cancel", cls: "ghost" }] };
+    render();
+  }
+  function tabbar() {
+    var items = [["shop", "bag", "Boutique", "Boutique"], ["path", "book", "Maths", "Cours de maths"], ["elec", "bolt", "Électricité", "Cours d\'électricité"], ["profile", "user", "Profil", "Profil"]];
+    return '<nav class="tabbar" aria-label="Navigation principale"><div class="in">' + items.map(function (x) {
+      return '<button class="tab' + (V.tab === x[0] ? " on" : "") + '" data-act="tab" data-tab="' + x[0] + '" aria-label="' + x[3] + '"' + (V.tab === x[0] ? ' aria-current="page"' : "") + ">" + ic(x[1], 24) + x[2] + "</button>";
+    }).join("") + "</div></nav>";
+  }
+
+  /* ---------- cours (parcours) ---------- */
+  function nodeKind(n, plan, t) {
+    var st = state.notions[n.id];
+    if (!st) { if (plan.newId === n.id) return "new"; return E.nextNewId(state, listOf(subjOf(n))) === n.id ? "wait" : "locked"; }
+    if (st.status === "relearn") return "relearn";
+    if (E.isDue(st, t)) return "due";
+    return st.stage >= E.MAX_STAGE ? "master" : "ok";
+  }
+  var NODEICON = { "new": "play", wait: "hourglass", locked: "lock", relearn: "refresh", due: "refresh", ok: "check", master: "crown" };
+  var NODETXT = { "new": "À apprendre", wait: "Demain", locked: "Verrouillée", relearn: "À réapprendre", due: "À réviser", ok: "Apprise", master: "Maîtrisée" };
+
+  function renderToday(plan, s) {
+    var nr = plan.reviews.length, nl = plan.relearn.length, hasNew = !!plan.newId, todo = nr + nl + (hasNew ? 1 : 0);
+    if (!listOf(s).length) return '<div class="card"><h3>Aucune notion</h3><p>Le contenu des cours n\'est pas encore chargé.</p></div>';
+    if (todo === 0) {
+      var rest = E.nextNewId(state, listOf(s)) === null ? "Toutes les notions du cours ont été vues. Il ne reste que les révisions." : "Une nouvelle notion t'attend demain.";
+      return '<div class="card today center"><h3>Tout est fait pour aujourd\'hui</h3><p class="note" style="margin:6px 0">' + rest + "</p><p class=\"note\" style=\"margin:6px 0\">" + nextDueText() + "</p></div>";
+    }
+    var mins = Math.max(3, Math.round(nr * 1 + nl * 4 + (hasNew ? 5 : 0)));
+    var chips = "";
+    if (nr) chips += '<span class="pill r">' + ic("refresh", 16) + plural(nr, "révision", "révisions") + "</span>";
+    if (nl) chips += '<span class="pill l">' + ic("refresh", 16) + plural(nl, "à réapprendre", "à réapprendre") + "</span>";
+    if (hasNew) chips += '<span class="pill n">' + ic("play", 14) + "1 nouvelle notion</span>";
+    return '<div class="card today"><h3>À faire aujourd\'hui</h3><div class="chips">' + chips + '</div><div class="note" style="margin-bottom:12px">Environ ' + mins + " minutes" + (plan.overflow ? " · +" + plural(plan.overflow, "autre révision", "autres révisions") + " plus tard" : "") + '</div><button class="btn" data-act="start-today">Commencer' + ic("arrow", 20) + "</button></div>";
+  }
+  function pathHtml(plan, t, list) {
+    var N = list.length, H = N * ROW, segs = "", nodes = "", labels = "", i, hereIdx = -1, hereKind = "", hp = ["relearn", "due", "new"], hi, hj;
+    for (hi = 0; hi < hp.length && hereIdx < 0; hi++) for (hj = 0; hj < N; hj++) if (nodeKind(list[hj], plan, t) === hp[hi]) { hereIdx = hj; hereKind = hp[hi]; break; }
+    for (i = 0; i < N; i++) {
+      var n = list[i], k = nodeKind(n, plan, t), st = state.notions[n.id], cx = XS[i % 2], cy = i * ROW + 38;
+      if (i < N - 1) {
+        var x1 = XS[(i + 1) % 2], y1 = (i + 1) * ROW + 38, ym = (cy + y1) / 2, done = !!st;
+        segs += '<path d="M' + cx + " " + cy + "C" + cx + " " + ym + " " + x1 + " " + ym + " " + x1 + " " + y1 + '" stroke="' + (done ? "var(--c-cyan)" : "var(--line3)") + '" stroke-width="3" stroke-linecap="round"' + (done ? "" : ' stroke-dasharray="2 8"') + ' fill="none"/>';
+      }
+      var stars = st ? starsRow(E.starsOf(st)) : "";
+      var lx = cx + 40, lw = PW - lx - 2;
+      nodes += '<button class="nd ' + k + '" style="left:' + (cx - 26) + "px;top:" + (cy - 26) + 'px" data-act="node" data-id="' + n.id + '" aria-label="' + esc(n.title) + ", " + NODETXT[k] + (st ? ", " + plural(E.starsOf(st), "étoile", "étoiles") : "") + '">' + ic(NODEICON[k], 26) + "</button>";
+      labels += '<div class="nl' + (k === "locked" || k === "wait" ? " dimmed" : "") + '" style="left:' + lx + "px;top:" + (cy - 26) + "px;width:" + lw + 'px" data-act="node" data-id="' + n.id + '">' + (n.pk ? '<div class="pk">' + esc(n.pk) + "</div>" : "") + '<div class="nt">' + R(esc(n.title)) + (n.demo ? '<span class="demo-tag">démo</span>' : "") + '</div><div class="ns ' + k + '">' + NODETXT[k] + "</div>" + stars + "</div>";
+    }
+    if (hereIdx >= 0) nodes += '<div class="here" style="left:' + XS[hereIdx % 2] + "px;top:" + (hereIdx * ROW + 38 - 26 - 28) + 'px">' + ({ "new": "Commence ici", due: "Révise ici", relearn: "Réapprends ici" })[hereKind] + "</div>";
+    return '<div class="path" style="height:' + H + 'px"><svg class="pl" width="' + PW + '" height="' + H + '" viewBox="0 0 ' + PW + " " + H + '" aria-hidden="true">' + segs + "</svg>" + nodes + labels + "</div>";
+  }
+  function renderSubject(s, plan, t) {
+    var M = COURSE[s] || {}, list = listOf(s), isE = s === "elec", chap = isE ? V.chapE : V.chap, act = isE ? "chap-e" : "chap", name = isE ? "Électricité" : "Maths", learned = 0;
+    list.forEach(function (n) { var x = state.notions[n.id]; if (x && x.status === "learned") learned++; });
+    var pct = list.length ? Math.round(learned * 100 / list.length) : 0;
+    var h = '<div class="seg" role="group" aria-label="' + (isE ? "Cours d\'électricité" : "Cours de maths") + '"><button data-act="' + act + '" data-n="1" class="' + (chap === 1 ? "on" : "") + '" aria-pressed="' + (chap === 1) + '">Cours n°1</button><button data-act="' + act + '" data-n="2" class="' + (chap === 2 ? "on" : "") + '" aria-pressed="' + (chap === 2) + '">Cours n°2</button></div>';
+    if (V.dev) h += '<div class="testbanner"><b>Mode test</b> : l\'appli croit qu\'on est le ' + E.fmtDay(t) + ". Va dans Profil pour revenir à la vraie date.</div>";
+    if (chap === 2) {
+      return h + '<div style="margin:18px 0 8px"><div class="kick">' + name + ' · Cours n°2</div><h1 style="font-size:28px;line-height:1.1;margin-top:6px">Titre à venir</h1></div>' +
+        '<div class="part" style="margin-top:14px">' + ic("lock", 22) + '<span>Ce cours arrive après le cours n°1. Les notions seront ajoutées une par une, comme pour le cours n°1.</span></div>';
+    }
+    if (!list.length) return h + '<div class="card" style="margin-top:18px"><h3>Cours réservés</h3><p class="note">Ces cours sont réservés aux étudiants du BUT R&amp;T. Scanne le QR code pour les télécharger.</p></div>';
+    h += '<div style="margin:18px 0 12px"><div class="kick">' + name + ' · Cours n°1</div><h1 style="font-size:28px;line-height:1.1;margin:6px 0 4px">' + esc(M.title || "") + '</h1>' +
+      '<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--dim);margin:6px 0"><span>' + learned + " notion" + (learned > 1 ? "s apprises" : " apprise") + " sur " + list.length + '</span><span class="mono">' + pct + ' %</span></div><div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></div></div>';
+    h += renderToday(plan, s);
+    h += '<button class="linkrow" data-act="open-plan">' + ic("cal", 22) + "<span>Planning des révisions</span>" + ic("arrow", 18) + "</button>";
+    h += (M.kick ? '<div class="kick dim" style="margin:20px 0 0">' + esc(M.kick) + "</div>" : '<div style="margin-top:20px"></div>') +
+      '<div class="legend"><span class="n">' + ic("play", 14) + 'À apprendre</span><span class="d">' + ic("refresh", 14) + 'À réviser</span><span class="o">' + ic("check", 14) + 'Apprise</span><span class="k">' + ic("lock", 14) + 'Verrouillée</span></div>' +
+      '<p class="note" style="margin:4px 0 0">Touche un rond pour ouvrir la notion.</p>' + pathHtml(plan, t, list);
+    (M.soon || []).forEach(function (p) { h += '<div class="part">' + ic("lock", 20) + "<span><b style=\"color:var(--text2);font-weight:600\">" + esc(p) + "</b><br>Bientôt</span></div>"; });
+    return h;
+  }
+
+  /* ---------- planning ---------- */
+  function renderPlanning(t) {
+    var rows = [], h = '<p class="note">Les passages se font à J+3, J+7, J+14, J+30 puis J+90 après l\'apprentissage. Une erreur remet la notion à zéro.</p>';
+    NOTIONS.forEach(function (n) {
+      var st = state.notions[n.id], sub, cls = "";
+      if (!st) { rows.push({ k: 9e9, n: n, sub: "Pas encore apprise", cls: "" }); return; }
+      if (st.status === "relearn") { rows.push({ k: -1e9, n: n, sub: "À réapprendre maintenant", cls: "late" }); return; }
+      var diff = st.due - t;
+      if (diff < 0) { sub = "En retard de " + plural(-diff, "jour", "jours"); cls = "late"; }
+      else if (diff === 0) { sub = "Aujourd'hui"; cls = "late"; }
+      else sub = (diff === 1 ? "Demain" : "Dans " + diff + " jours") + " · " + E.fmtDay(st.due, { weekday: "long", day: "numeric", month: "short" });
+      sub += " · " + (st.stage >= E.MAX_STAGE ? "tous les 90 jours" : "étape " + E.STAGE_NAMES[st.stage]);
+      rows.push({ k: st.due, n: n, sub: sub, cls: cls });
+    });
+    rows.sort(function (a, b) { return a.k - b.k; });
+    rows.forEach(function (r) { h += '<div class="rowitem"><div class="e">' + r.n.emoji + '</div><div><div class="t">' + R(esc(r.n.title)) + '</div><div class="d ' + r.cls + '">' + r.sub + "</div></div></div>"; });
+    return h;
+  }
+  function subScreen(title, body) {
+    return '<div class="screen"><div class="subtop"><button class="close" data-act="sub-back" aria-label="Retour">' + ic("back", 24) + "</button><h2>" + title + '</h2></div><div class="main" style="padding-top:6px">' + body + "</div></div>";
+  }
+
+  /* ---------- fiches ---------- */
+  function stripSvg(h) { return String(h).replace(/<svg[\s\S]*?<\/svg>/g, ""); }
+  function textLen(h) { return String(h).replace(/<[^>]*>/g, "").trim().length; }
+  /* Quand le graphique d'une carte est retiré, on retire aussi sa légende colorée qui n'a plus de sens. */
+  function noGraph(h) {
+    var had = /<svg/.test(h);
+    h = stripSvg(h);
+    return had ? h.replace(/<p>\s*(?:🔵|🟠|🟢|🔴|🟣|▪️)[\s\S]*?<\/p>/g, "") : h;
+  }
+  /* Une fiche est assemblée à partir du cours déjà validé, dans le code couleur : formule, méthode, exemples, piège, à retenir. */
+  function ficheHtml(f) {
+    var h = "";
+    f.ids.forEach(function (id, i) {
+      var n = byId(id); if (!n) return;
+      var steps = n.cards.filter(function (c) { return c.tag === "steps"; });
+      var demos = n.cards.filter(function (c) { return c.tag === "demo" && !/^Voir/.test(c.title); })
+        .map(function (c) { return { t: c.title, h: noGraph(c.html) }; })
+        .filter(function (c) { var L = textLen(c.h); return L >= 25 && L <= 900; });
+      var traps = n.cards.filter(function (c) { return c.tag === "trap"; });
+      var keeps = n.cards.filter(function (c) { return c.tag === "keep"; });
+      h += '<section class="fsec"><div class="fhead"><span class="fnum">' + (i + 1) + "</span><h3>" + R(esc(n.title)) + '</h3></div><div class="fl f">Formule</div>' + n.recap.replace(/\s*&nbsp;\s*(<b>)/g, "<br>$1");
+      steps.forEach(function (c, k) { h += '<div class="fl s">Méthode' + (k ? " · " + R(esc(c.title)) : "") + "</div>" + noGraph(c.html); });
+      demos.forEach(function (d) { h += '<div class="fl d">' + (/^exemples?\b/i.test(d.t) ? "" : "Exemple · ") + R(esc(d.t)) + "</div>" + d.h; });
+      traps.forEach(function (c) { h += '<div class="fl t">Piège</div>' + noGraph(c.html); });
+      keeps.forEach(function (c) { h += '<div class="fl k">À retenir</div>' + noGraph(c.html); });
+      h += "</section>";
+    });
+    return R(h);
+  }
+  function ficheById(id) { for (var i = 0; i < FICHES.length; i++) if (FICHES[i].id === id) return FICHES[i]; return null; }
+
+  /* ---------- boutique ---------- */
+  function renderShop() {
+    var sh = E.shieldsAvail(state), c = streakNow(), wk = c % 7 === 0 && c > 0 ? 7 : c % 7, dots = "";
+    for (var d = 0; d < 7; d++) dots += '<i class="' + (d < wk ? "on" : "") + '"></i>';
+    var h = '<h1 style="font-size:28px;margin:6px 0 10px">Boutique</h1>' +
+      '<div class="card"><div class="bal">' + ic("token", 34) + '<div><div class="balnum">' + tokens() + '</div><div class="note" style="margin:2px 0 0">' + (tokens() === 1 ? "jeton" : "jetons") + ' à dépenser</div></div></div>' +
+      '<h3 style="margin:14px 0 6px">Comment en gagner ?</h3><p class="note" style="margin:0 0 4px"><b style="color:var(--text)">+' + E.DAILY + "</b> jetons chaque jour où tu fais une séance.</p>" +
+      '<p class="note" style="margin:0 0 4px"><b style="color:var(--text)">+' + E.WEEK_BONUS + "</b> de bonus tous les 7 jours de série.</p>" +
+      '<p class="note" style="margin:0 0 2px">' + (V.dev ? "" : (state.streak.last === today() ? "✅ Aujourd'hui : déjà gagné." : "👉 Aujourd'hui : fais une séance pour gagner +" + E.DAILY + ".")) + '</p>' +
+      '<div class="wk" aria-label="' + wk + ' jour sur 7 avant le bonus">' + dots + "</div></div>" +
+      '<div class="seg" role="group" aria-label="Rayon" style="margin-top:14px"><button data-act="shoptab" data-n="fiches" class="' + (V.shop === "fiches" ? "on" : "") + '" aria-pressed="' + (V.shop === "fiches") + '">Fiches</button><button data-act="shoptab" data-n="look" class="' + (V.shop === "look" ? "on" : "") + '" aria-pressed="' + (V.shop === "look") + '">Apparence</button></div>';
+    if (V.shop === "fiches") {
+      h += '<p class="note" style="margin:8px 2px 4px">Une fiche = le résumé tout fait de quelques notions : formules, méthode, exemples et pièges.</p>';
+      FICHES.forEach(function (f) {
+        var key = "fiche:" + f.id, own = E.owns(state, key), act;
+        if (f.soon) act = '<button class="btn sm ghost" disabled>Bientôt</button>';
+        else if (own) act = '<button class="btn sm sec" data-act="open-fiche" data-id="' + f.id + '">Ouvrir</button>';
+        else act = '<button class="btn sm" data-act="buy" data-kind="fiche" data-id="' + f.id + '"' + (tokens() < f.price ? ' aria-disabled="true"' : "") + ">" + (tokens() < f.price ? "Il manque " + (f.price - tokens()) : "Acheter") + "</button>";
+        h += '<div class="item"><div class="ic">' + ic("doc", 24) + '</div><div class="tx"><div class="t">Fiche&nbsp;· ' + esc(f.title) + '</div><div class="s">' + esc(f.sub) + "</div>" +
+          (own ? '<div class="own">Acquise</div>' : (f.soon ? "" : '<div class="price">' + ic("token", 16) + f.price + "</div>")) + "</div>" + act + "</div>";
+      });
+      h += '<div class="item"><div class="ic" style="color:var(--c-amb)">' + ic("shield", 24) + '</div><div class="tx"><div class="t">Bouclier de série</div><div class="s">Sauve ta série si tu oublies un jour. Tu en as ' + sh + " sur " + E.SHIELD_MAX + '.</div><div class="price">' + ic("token", 16) + E.SHIELD_PRICE + '</div></div><button class="btn sm" data-act="buy" data-kind="shield"' + (sh >= E.SHIELD_MAX || tokens() < E.SHIELD_PRICE ? ' aria-disabled="true"' : "") + ">" + (sh >= E.SHIELD_MAX ? "Complet" : (tokens() < E.SHIELD_PRICE ? "Il manque " + (E.SHIELD_PRICE - tokens()) : "Acheter")) + "</button></div>";
+    } else {
+      Object.keys(ACC).forEach(function (id) {
+        var a = ACC[id], key = "acc:" + id, own = a.price === 0 || E.owns(state, key), used = state.settings.accent === id, sw = effTheme() === "day" ? a.day : a.night, act;
+        if (used) act = '<button class="btn sm ghost" disabled>Utilisée</button>';
+        else if (own) act = '<button class="btn sm sec" data-act="use-acc" data-id="' + id + '">Utiliser</button>';
+        else act = '<button class="btn sm" data-act="buy" data-kind="acc" data-id="' + id + '"' + (tokens() < a.price ? ' aria-disabled="true"' : "") + ">" + (tokens() < a.price ? "Il manque " + (a.price - tokens()) : "Acheter") + "</button>";
+        h += '<div class="item"><div class="ic"><span style="width:26px;height:26px;border-radius:50%;background:' + sw + ';display:block"></span></div><div class="tx"><div class="t">Couleur · ' + a.name + '</div><div class="s">Boutons, parcours et barres.</div>' + (a.price === 0 ? '<div class="own">Par défaut</div>' : (own ? '<div class="own">Acquise</div>' : '<div class="price">' + ic("token", 16) + a.price + "</div>")) + "</div>" + act + "</div>";
+      });
+    }
+    return h;
+  }
+  function askBuy(kind, id) {
+    var title, price, key = null;
+    if (kind === "shield") { title = "un bouclier de série"; price = E.SHIELD_PRICE; if (E.shieldsAvail(state) >= E.SHIELD_MAX) { showToast("Tu as déjà " + E.SHIELD_MAX + " boucliers."); return; } }
+    else if (kind === "fiche") { var f = ficheById(id); title = "la fiche « " + f.title + " »"; price = f.price; key = "fiche:" + id; }
+    else { var a = ACC[id]; title = "la couleur " + a.name.toLowerCase(); price = a.price; key = "acc:" + id; }
+    if (tokens() < price) { showToast("Il te manque " + plural(price - tokens(), "jeton", "jetons") + "."); return; }
+    V.pending = { kind: kind, id: id, key: key, price: price };
+    V.dialog = { title: "Acheter ?", text: "Acheter <b>" + esc(title) + "</b> pour <b>" + price + "</b> jetons ? Il t'en restera " + (tokens() - price) + ".", buttons: [{ label: "Acheter", act: "buy-do" }, { label: "Annuler", act: "dlg-cancel", cls: "ghost" }] };
+    render();
+  }
+  function doBuy() {
+    var p = V.pending; V.dialog = null; V.pending = null;
+    if (!p) { render(); return; }
+    var r = p.kind === "shield" ? E.buyShield(state) : E.buy(state, p.key, p.price);
+    if (r === "ok") { if (p.kind === "acc") state.settings.accent = p.id; persist(); showToast(p.kind === "acc" ? "Nouvelle couleur activée." : (p.kind === "shield" ? "Bouclier acheté." : "Fiche achetée.")); }
+    else showToast(r === "cher" ? "Pas assez de jetons." : "Déjà acheté.");
+  }
+
+  /* ---------- profil ---------- */
+  var ROBOT = '<svg width="72" height="72" viewBox="0 0 72 72" fill="none" role="img" aria-label="Avatar : un petit robot oscilloscope"><path d="M36 10v8" stroke="var(--acc)" stroke-width="2.5" stroke-linecap="round"/><circle cx="36" cy="8" r="3.5" fill="var(--c-mag)"/><rect x="6" y="32" width="5" height="12" rx="2" fill="var(--acc)"/><rect x="61" y="32" width="5" height="12" rx="2" fill="var(--acc)"/><rect x="12" y="18" width="48" height="38" rx="10" fill="var(--surf)" stroke="var(--acc)" stroke-width="2.5"/><rect x="22" y="29" width="6" height="11" rx="3" fill="var(--acc)"/><rect x="44" y="29" width="6" height="11" rx="3" fill="var(--acc)"/><path d="M24 47C28 42 32 42 36 47S44 52 48 47" stroke="var(--c-mag)" stroke-width="2.5" stroke-linecap="round"/><rect x="22" y="58" width="28" height="10" rx="4" fill="var(--surf2)" stroke="var(--acc)" stroke-width="2"/></svg>';
+  function calendarUrl() {
+    var hr = state.settings.remindHour || 21, now = new Date(), d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (now.getHours() >= hr) d.setDate(d.getDate() + 1);
+    var ymd = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());
+    var details = "Ta séance de maths de 10 minutes : révisions + une nouvelle notion." + (APP_URL ? " Ouvre : " + APP_URL : "");
+    return "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent("Maths : séance du soir") +
+      "&dates=" + ymd + "T" + pad(hr) + "0000/" + ymd + "T" + pad(hr) + "1500&details=" + encodeURIComponent(details) + "&recur=" + encodeURIComponent("RRULE:FREQ=DAILY");
+  }
+  function renderProfile(t) {
+    var hr = state.settings.remindHour || 21, npd = state.settings.newPerDay, opts = "", th = state.settings.theme, learned = 0;
+    for (var i = 6; i <= 23; i++) opts += '<option value="' + i + '"' + (i === hr ? " selected" : "") + ">" + i + " h</option>";
+    NOTIONS.forEach(function (n) { var s = state.notions[n.id]; if (s && s.status === "learned") learned++; });
+    var cs = cloud.status === "cloud" ? "Ta progression est aussi gardée dans ton compte Claude." : (cloud.status === "error" ? "Le compte ne répond pas : la progression reste sur cet appareil." : (storageOk ? "Ta progression est gardée sur cet appareil seulement. Pense à copier ton code de sauvegarde." : "Rien n'est gardé sur cet appareil. Copie ton code de sauvegarde après chaque séance."));
+    var c = streakNow();
+    var h = '<div class="avatar">' + ROBOT + '<div class="nm"><input class="name" id="pname" maxlength="20" placeholder="Ton pseudo" aria-label="Ton pseudo" value="' + esc(V.draft.pname !== undefined ? V.draft.pname : state.profile.name) + '" autocomplete="off"><div class="note" style="margin-top:4px">BUT R&amp;T · 1re année</div></div></div>' +
+      '<div class="sgrid"><div class="sbox"><div class="l">Série</div><div class="v">' + c + ' <small>j · record ' + Math.max(state.streak.best, c) + '</small></div></div>' +
+      '<div class="sbox"><div class="l">Étoiles</div><div class="v">' + E.totalStars(state, NOTIONS) + ' <small>/ ' + NOTIONS.length * 3 + '</small></div></div>' +
+      '<div class="sbox"><div class="l">Jetons</div><div class="v" style="color:var(--c-mag)">' + tokens() + '</div></div>' +
+      '<div class="sbox"><div class="l">Notions apprises</div><div class="v">' + learned + ' <small>/ ' + NOTIONS.length + "</small></div></div></div>" +
+      '<div class="card" style="margin-top:12px"><div style="display:flex;align-items:center;gap:12px"><span style="color:var(--c-amb)">' + ic("shield", 26) + '</span><div><b>Boucliers de série : ' + E.shieldsAvail(state) + '</b><div class="note">Un bouclier sauve ta série si tu manques un jour. Il s\'achète en boutique.</div></div></div></div>' +
+      '<button class="linkrow" data-act="open-tour" style="margin-top:14px">' + ic("help", 22) + "<span>Comment ça marche ?</span>" + ic("arrow", 18) + "</button>" +
+      '<div class="kick dim" style="margin:20px 0 0">Réglages</div><div class="rows">' +
+      '<div class="srow"><span class="k">Langue</span><span class="v">Français</span></div>' +
+      '<div class="srow" style="flex-direction:column;align-items:stretch;padding:10px 14px"><span class="k">Apparence</span><div class="seg" role="group" aria-label="Apparence" style="margin-top:8px">' +
+      [["day", "sun", "Jour"], ["night", "moon", "Nuit"], ["auto", "auto", "Auto"]].map(function (x) { return '<button data-act="theme" data-n="' + x[0] + '" class="' + (th === x[0] ? "on" : "") + '" aria-pressed="' + (th === x[0]) + '">' + ic(x[1], 18) + x[2] + "</button>"; }).join("") + "</div></div>" +
+      '<div class="srow"><span class="k">Nouvelles notions par jour</span><div class="seg" style="width:180px;flex:none">' + [1, 2, 3].map(function (n) { return '<button data-act="npd" data-n="' + n + '" class="' + (n === npd ? "on" : "") + '" aria-pressed="' + (n === npd) + '">' + n + "</button>"; }).join("") + "</div></div>" +
+      (window.MQ ? '<div class="srow"><span class="k">Installer l\'appli</span>' + (window.MQ.standalone() ? '<span class="v">Installée ✓</span>' : (window.MQ.canInstall() ? '<button class="btn sm" data-act="mq-install">Installer</button>' : '<span class="v">Menu ⋮ › Installer l\'application</span>')) + '</div><div class="srow"><span class="k">Mises à jour</span><button class="btn sm ghost" data-act="mq-update">Vérifier</button></div><div class="srow"><span class="k">Un problème d\'affichage ?</span><button class="btn sm ghost" data-act="mq-force-ask">Forcer</button></div>' : '<div class="srow"><span class="k">Installer l\'appli</span><span class="v">Bientôt</span></div>') +
+      '<div class="srow" data-act="vtap"><span class="k">Version</span><span class="v">v' + APP_VERSION + " · Oscillo</span></div>" +
+      '<div class="srow"><span class="k">Licence</span><span class="v">Tous droits réservés</span></div></div>' +
+      '<p class="note">Seul le français est disponible pour l\'instant. Appli personnelle de l\'auteur : ne pas copier ni partager. Le contenu vient de cours de l\'école : ne pas le diffuser sans accord.</p>' +
+      '<div class="card"><details data-key="alarm"' + (V.open.alarm ? " open" : "") + '><summary>Rappel du soir</summary><p>Heure : <select data-change="hour" aria-label="Heure du rappel">' + opts + '</select></p>' +
+      '<a class="btn" href="' + calendarUrl() + '" target="_blank" rel="noopener">Ajouter l\'alarme au calendrier</a>' +
+      '<p class="note">Un site ne peut pas t\'envoyer de notification quand il est fermé. L\'alarme du calendrier le fait à sa place, tous les jours.</p><p class="note"><b>1.</b> Touche le bouton ci-dessus.</p><p class="note"><b>2.</b> Dans Agenda, appuie sur <b>Enregistrer</b>.</p><p class="note"><b>3.</b> La sonnerie suit le réglage de ton Agenda.</p><p class="note">Si tu changes l\'heure ici, supprime l\'ancien rappel. Autre option : appli <b>Horloge</b> → nouvelle alarme à ' + hr + ' h, nommée « Maths ».</p></details></div>' +
+      '<div class="card"><details data-key="save"' + (V.open.save ? " open" : "") + '><summary>Sauvegarde</summary><p class="note">' + cs + '</p><button class="btn ghost" data-act="backup">Afficher mon code de sauvegarde</button>' +
+      (V.backupText ? '<textarea readonly id="bk" style="margin-top:10px" aria-label="Code de sauvegarde">' + esc(V.backupText) + '</textarea><p class="note">Copie ce texte et garde-le dans tes notes.</p>' : "") +
+      '<details data-key="restore" style="margin-top:12px"' + (V.open.restore ? " open" : "") + '><summary>Restaurer depuis un code</summary><textarea id="rs" placeholder="Colle ton code ici (MQ1:...)" aria-label="Code à restaurer">' + esc(V.draft.rs || "") + '</textarea><button class="btn ghost" data-act="restore" style="margin-top:8px">Restaurer</button>' + (V.restoreMsg ? "<p class='note'>" + esc(V.restoreMsg) + "</p>" : "") + "</details></details></div>" +
+      (V.dev || V.showTest ? '<div class="card"><details data-key="test"' + (V.open.test ? " open" : "") + '><summary>Mode test (pour essayer le calendrier)</summary><p class="note">On est le <b>' + E.fmtDay(t) + '</b>.</p><button class="btn ghost" data-act="plus1">Simuler : +1 jour</button><button class="btn ghost" data-act="plus3">Simuler : +3 jours</button><button class="btn ghost" data-act="realdate">Revenir à la vraie date</button><p class="note">Pour tester seulement. Les jours simulés ne donnent ni série ni jetons, mais les révisions faites pendant le test restent enregistrées : réinitialise la progression avant de commencer pour de vrai.</p></details></div>' : "") +
+      '<div class="card"><button class="btn ghost red" data-act="reset-ask">Réinitialiser toute ma progression</button></div>';
+    return h;
+  }
+
+  /* ---------- accueil ---------- */
+  function renderHome() {
+    var t = today(), plan = planFor(curSubj(), t), body;
+    if (V.sub === "plan") return subScreen("Planning", renderPlanning(t));
+    if (V.sub && V.sub.indexOf("fiche:") === 0) {
+      var f = ficheById(V.sub.slice(6));
+      if (f && E.owns(state, "fiche:" + f.id)) return subScreen(esc(f.title), ficheHtml(f));
+      V.sub = null;
+    }
+    if (V.tab === "shop") body = renderShop(); else if (V.tab === "profile") body = renderProfile(t); else body = renderSubject(curSubj(), plan, t);
+    return '<div class="screen">' + topbar() + '<div class="main tabs">' + body + "</div>" + tabbar() + "</div>";
+  }
+  function renderSheet() {
+    var id = V.sheet, n = byId(id); if (!n) return "";
+    var t = today(), plan = planFor(subjOf(n), t), k = nodeKind(n, plan, t), st = state.notions[id], info, btns = "";
+    if (k === "new") { info = "Nouvelle notion, prête à apprendre."; btns = '<button class="btn" data-act="learn" data-id="' + id + '">Apprendre</button>'; }
+    else if (k === "wait") info = "La prochaine nouvelle notion arrive demain (réglage : " + state.settings.newPerDay + " par jour).";
+    else if (k === "locked") info = "Elle se débloque quand la notion d'avant est apprise.";
+    else if (k === "relearn") { info = "Tu t'es trompé à la dernière révision. On la réapprend."; btns = '<button class="btn red" data-act="relearn" data-id="' + id + '">Réapprendre</button>'; }
+    else if (k === "due") { info = "À réviser aujourd'hui (étape " + E.STAGE_NAMES[Math.min(st.stage, 4)] + ")."; btns = '<button class="btn" data-act="review" data-id="' + id + '">Réviser maintenant</button>'; }
+    else { info = (k === "master" ? "Maîtrisée. " : "") + "Prochaine révision : " + E.fmtDay(st.due) + "."; btns = '<button class="btn sec" data-act="practice" data-id="' + id + '">S\'entraîner (sans effet sur le calendrier)</button>'; }
+    if (st) btns += '<button class="btn ghost" data-act="view" data-id="' + id + '">Revoir le cours</button>';
+    return '<div class="overlay" data-act="close-sheet"><div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(n.title) + '" data-stop="1"><h3>' + n.emoji + " " + R(esc(n.title)) + '</h3><p class="note">' + info + "</p>" + btns + '<button class="linkbtn" data-act="close-sheet" style="margin-top:6px">Fermer</button></div></div>';
+  }
+  function renderDialog() {
+    var d = V.dialog; if (!d) return "";
+    return '<div class="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(d.title) + '" data-stop="1"><h3>' + d.title + "</h3><p>" + d.text + "</p>" + d.buttons.map(function (b) { return '<button class="btn ' + (b.cls || "") + '" data-act="' + b.act + '">' + b.label + "</button>"; }).join("") + "</div></div>";
+  }
+
+  /* ---------- visite guidée (1er lancement) ---------- */
+  var TOUR = [
+    { ic: "play", t: "Bienvenue !", p: ["<b>1 notion de maths par jour</b>, en 5 à 10 minutes.", "Des cartes courtes, puis des exercices. Pas de stress."] },
+    { ic: "refresh", t: "Pour bien retenir", rows: [["book", "<b>1.</b> Tu lis un mini-cours."], ["check", "<b>2.</b> Tu fais quelques exercices."], ["cal", "<b>3.</b> L'appli te redemande la notion <b>3, 7, 14, 30 puis 90 jours</b> plus tard."], ["bulb", "Une erreur ? Pas grave : tu la revois tout de suite."]] },
+    { ic: "star", t: "Série, étoiles, jetons", rows: [["flame", "<b>Série</b> : les jours d'affilée où tu t'entraînes.", "var(--c-amb)"], ["star", "<b>Étoiles</b> : ta maîtrise de chaque notion.", "var(--c-cyan)"], ["token", "<b>Jetons</b> : tu en gagnes chaque jour et tu les dépenses dans la Boutique.", "var(--c-mag)"]] },
+    { ic: "check", t: "Prêt ?", p: ["Sur l'écran <b>Maths</b>, appuie sur <b>Commencer</b> : ta première notion t'attend.", "Tu peux relire cette aide dans <b>Profil › Comment ça marche ?</b>"] }
+  ];
+  function renderTour() {
+    var i = V.tour, s = TOUR[i], last = i === TOUR.length - 1, body = "", dots = "", k;
+    (s.p || []).forEach(function (x) { body += "<p>" + x + "</p>"; });
+    (s.rows || []).forEach(function (r) { body += '<div class="trow"><span style="flex:none;display:flex;margin-top:2px' + (r[2] ? ";color:" + r[2] : "") + '">' + ic(r[0], 24) + "</span><span>" + r[1] + "</span></div>"; });
+    for (k = 0; k < TOUR.length; k++) dots += '<i class="' + (k === i ? "on" : "") + '"></i>';
+    return '<div class="tour" role="dialog" aria-modal="true" aria-label="Comment ça marche"><div class="tb"><div class="big-ic">' + ic(s.ic, 36) + "</div><h2>" + s.t + "</h2>" + body + "</div>" +
+      '<div class="tbtns"><div class="dots" aria-label="Étape ' + (i + 1) + " sur " + TOUR.length + '">' + dots + "</div>" +
+      '<button class="btn" data-act="' + (last ? "tour-done" : "tour-next") + '">' + (last ? "C'est parti" : "Suivant") + (last ? "" : " " + ic("arrow", 20)) + "</button>" +
+      (i > 0 ? '<button class="linkbtn" data-act="tour-back">' + ic("back", 18) + " Retour</button>" : (last ? "" : '<button class="linkbtn" data-act="tour-done">Passer</button>')) + "</div></div>";
+  }
+
+  /* ---------- rendu général ---------- */
+  function render() {
+    applyTheme();
+    var html = V.session ? renderSession() : renderHome();
+    if (V.sheet && !V.session) html += renderSheet();
+    html += renderDialog();
+    if (V.tour !== null) html += renderTour();
+    if (V.toast) html += '<div class="toast' + (V.session ? " low" : "") + '" role="status">' + esc(V.toast) + "</div>";
+    app.innerHTML = nb(html);
+    var ni = document.getElementById("numin");
+    if (ni && !ni.disabled) setTimeout(function () { try { ni.focus(); } catch (e) {} }, 60);
+    else if (V.tour !== null) { var tb0 = app.querySelector(".tour .btn"); if (tb0) { try { tb0.focus({ preventScroll: true }); } catch (e) {} } }
+    else if (V.dialog || (V.sheet && !V.session)) { var sb = app.querySelector(".sheet button"); if (sb) { try { sb.focus({ preventScroll: true }); } catch (e) {} } }
+  }
+
+  /* ---------- événements ---------- */
+  app.addEventListener("click", function (ev) {
+    var el = ev.target.closest("[data-act]"); if (!el) return;
+    if (el.classList.contains("overlay") && ev.target !== el) return; // clic dans la feuille : on ignore le fond
+    var a = el.getAttribute("data-act"), id = el.getAttribute("data-id"), S = V.session;
+    if (/^(tab|chap|open-plan|open-fiche|sub-back|node|learn|relearn|review|practice|view|home|start-today)$/.test(a) && V.toast) { V.toast = null; if (V.toastT) clearTimeout(V.toastT); }
+    if ((a === "lesson-next" || a === "continue" || a === "understood" || a === "series-again" || a === "relesson" || a === "lesson-back" || a === "check" || a === "home" || a === "quit" || a === "buy-do") && tooFast()) return;
+    switch (a) {
+      case "neg": {
+        var cu = S && S.step && S.step.cur; if (!cu || cu.checked) break;
+        cu.input = cu.input.charAt(0) === "-" ? cu.input.slice(1) : "-" + cu.input;
+        var ni2 = document.getElementById("numin"); if (ni2) { ni2.value = cu.input; try { ni2.focus(); } catch (e) {} }
+        var cb = document.getElementById("checkbtn"); if (cb) cb.disabled = !cu.input.trim();
+        break;
+      }
+      case "tab": V.tab = el.getAttribute("data-tab"); V.sub = null; render(); window.scrollTo(0, 0); break;
+      case "chap": V.chap = +el.getAttribute("data-n"); render(); break;
+      case "chap-e": V.chapE = +el.getAttribute("data-n"); render(); break;
+      case "shoptab": V.shop = el.getAttribute("data-n"); render(); break;
+      case "open-plan": V.sub = "plan"; render(); window.scrollTo(0, 0); break;
+      case "open-fiche": V.sub = "fiche:" + id; render(); window.scrollTo(0, 0); break;
+      case "sub-back": V.sub = null; render(); window.scrollTo(0, 0); break;
+      case "start-today": startToday(curSubj()); break;
+      case "node": V.sheet = id; render(); break;
+      case "close-sheet": V.sheet = null; render(); break;
+      case "learn": beginSession([{ kind: "learn", id: id, relearn: false }]); break;
+      case "relearn": beginSession([{ kind: "learn", id: id, relearn: true }]); break;
+      case "review": beginSession([{ kind: "review", id: id }]); break;
+      case "practice": beginSession([{ kind: "review", id: id, practice: true }]); break;
+      case "view": beginSession([{ kind: "view", id: id }]); break;
+      case "home": closeSession(); break;
+      case "quit":
+        if (S && S.step && S.step.kind === "view") { closeSession(); break; }
+        V.dialog = { title: "Quitter la séance ?", text: "Ce que tu as déjà validé est gardé. Une notion pas terminée devra être refaite.", buttons: [{ label: "Continuer la séance", act: "dlg-cancel" }, { label: "Quitter", act: "dlg-quit", cls: "ghost red" }] };
+        render(); break;
+      case "dlg-cancel": V.dialog = null; V.pending = null; render(); break;
+      case "explain": explain(el.getAttribute("data-k")); break;
+      case "vtap": V.vtap = (V.vtap || 0) + 1; if (V.vtap >= 5 && !V.showTest) { V.showTest = true; showToast("Mode test affiché en bas de la page."); } break;
+      case "mq-relock": window.MQ.relock(); break;
+      case "mq-install": window.MQ.install().then(function (ok) { if (ok) showToast("Appli installée !"); else render(); }); break;
+      case "mq-update": window.MQ.checkUpdate(true).then(function (r) {
+        if (r && r.relock) { V.dialog = { title: "Nouveau QR code", text: "Les cours ont été renouvelés avec un nouveau QR code.<br><br>Ta progression est gardée. Scanne le nouveau QR code pour recevoir les cours à jour.", buttons: [{ label: "Scanner le nouveau QR code", act: "mq-relock" }, { label: "Plus tard", act: "dlg-cancel", cls: "ghost" }] }; render(); }
+        else if (r && (r.app || r.content)) { V.dialog = { title: "Mise à jour disponible", text: "Une nouvelle version est prête (v" + esc(r.version) + ").<br><br>Ta progression est gardée.", buttons: [{ label: "Mettre à jour", act: "mq-force" }, { label: "Plus tard", act: "dlg-cancel", cls: "ghost" }] }; render(); }
+        else showToast(r ? "Tu as déjà la dernière version." : "Pas de connexion : impossible de vérifier.");
+      }); break;
+      case "mq-force-ask": V.dialog = { title: "Forcer la mise à jour", text: "L'appli retélécharge tous ses fichiers. Il faut du réseau.<br><br>Ta progression est gardée.", buttons: [{ label: "Forcer la mise à jour", act: "mq-hard" }, { label: "Annuler", act: "dlg-cancel", cls: "ghost" }] }; render(); break;
+      case "mq-hard": window.MQ.forceUpdate(true).then(function (ok) { if (ok === false) { V.dialog = null; showToast("Pas de connexion : mise à jour impossible pour l'instant."); } }); break;
+      case "mq-force": window.MQ.forceUpdate().then(function (ok) { if (ok === false) { V.dialog = null; showToast("Pas de connexion : mise à jour impossible pour l'instant."); } }); break;
+      case "go-shop": V.dialog = null; V.tab = "shop"; V.sub = null; render(); window.scrollTo(0, 0); break;
+      case "open-tour": V.tour = 0; render(); break;
+      case "tour-next": V.tour = Math.min(TOUR.length - 1, V.tour + 1); render(); break;
+      case "tour-back": V.tour = Math.max(0, V.tour - 1); render(); break;
+      case "tour-done": V.tour = null; if (!state.settings.tour) { state.settings.tour = 1; persist(); V.tab = "path"; } render(); window.scrollTo(0, 0); break;
+      case "dlg-quit": closeSession(); break;
+      case "lesson-next": {
+        var st = S.step;
+        if (st.ci < st.cards.length - 1) { st.ci++; render(); window.scrollTo(0, 0); }
+        else if (st.kind === "view") closeSession();
+        else { startSeries(st); render(); window.scrollTo(0, 0); }
+        break;
+      }
+      case "lesson-back": if (S.step.ci > 0) { S.step.ci--; render(); window.scrollTo(0, 0); } break;
+      case "pick": if (S.step.cur && !S.step.cur.checked) { S.step.cur.sel = +el.getAttribute("data-i"); render(); } break;
+      case "toggle-recap": S.step.cur.showRecap = !S.step.cur.showRecap; render(); break;
+      case "check": doCheck(); break;
+      case "continue": doContinue(); break;
+      case "series-again": startSeries(S.step); render(); window.scrollTo(0, 0); break;
+      case "relesson": if (S.step.roundErrors && S.step.roundErrors.length) S.step.errors = S.step.roundErrors.slice(); S.step.cards = buildCards(S.step); S.step.phase = "lesson"; S.step.ci = 0; render(); window.scrollTo(0, 0); break;
+      case "understood": completeLearn(); break;
+      case "npd": state.settings.newPerDay = +el.getAttribute("data-n"); persist(); render(); break;
+      case "theme": state.settings.theme = el.getAttribute("data-n"); persist(); render(); break;
+      case "buy": askBuy(el.getAttribute("data-kind"), id); break;
+      case "buy-do": doBuy(); break;
+      case "use-acc": state.settings.accent = id; persist(); render(); break;
+      case "backup": V.backupText = E.encodeBackup(state); render(); break;
+      case "restore": {
+        var ta = document.getElementById("rs"), s2 = E.decodeBackup(ta && ta.value);
+        if (!s2) { V.restoreMsg = "Ce code n'est pas valide."; render(); break; }
+        state = s2; state.epoch = Date.now(); persist(); V.restoreMsg = "Progression restaurée."; V.backupText = ""; V.draft.rs = ""; render(); break;
+      }
+      case "plus1": V.dev = (V.dev || 0) + 1; saveDev(); render(); break;
+      case "plus3": V.dev = (V.dev || 0) + 3; saveDev(); render(); break;
+      case "realdate": V.dev = 0; saveDev(); render(); break;
+      case "reset-ask":
+        V.dialog = { title: "Tout effacer ?", text: "Ta progression (notions apprises, étoiles, série, jetons et achats) sera supprimée. Impossible de revenir en arrière, sauf avec un code de sauvegarde.", buttons: [{ label: "Non, je garde tout", act: "dlg-cancel" }, { label: "Oui, tout effacer", act: "reset-do", cls: "ghost red" }] };
+        render(); break;
+      case "reset-do": state = E.newState(); state.epoch = Date.now(); V.dialog = null; V.backupText = ""; persist(); render(); break;
+    }
+  });
+  app.addEventListener("input", function (ev) {
+    if (ev.target.id === "pname") V.draft.pname = ev.target.value;
+    if (ev.target.id === "rs") V.draft.rs = ev.target.value;
+    if (ev.target.id === "numin" && V.session && V.session.step && V.session.step.cur) {
+      V.session.step.cur.input = ev.target.value;
+      var b = document.getElementById("checkbtn"); if (b) b.disabled = !ev.target.value.trim();
+    }
+  });
+  app.addEventListener("change", function (ev) {
+    var t = ev.target;
+    if (t.getAttribute && t.getAttribute("data-change") === "hour") { state.settings.remindHour = +t.value; persist(); render(); }
+    else if (t.id === "pname") { state.profile.name = String(t.value).trim().slice(0, 20); delete V.draft.pname; persist(); }
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key !== "Escape") return;
+    if (V.dialog) { V.dialog = null; V.pending = null; render(); } else if (V.sheet && !V.session) { V.sheet = null; render(); }
+  });
+  app.addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter" && ev.target.id === "numin") { ev.preventDefault(); var cur = V.session && V.session.step && V.session.step.cur; if (cur && !cur.checked) doCheck(); }
+    if (ev.key === "Enter" && ev.target.id === "pname") { ev.preventDefault(); try { ev.target.blur(); } catch (e) {} }
+  });
+  app.addEventListener("toggle", function (ev) {
+    var k = ev.target.getAttribute && ev.target.getAttribute("data-key");
+    if (k) V.open[k] = ev.target.open;
+  }, true);
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) { if (cloud.db && cloud.dirty) { if (cloud.timer) { clearTimeout(cloud.timer); cloud.timer = null; } sync(); } return; }
+    if (cloud.db) sync(); else initCloud();
+    if (!V.session) renderBg();
+  });
+
+  /* ---------- démarrage ---------- */
+  if (window.MQ) window.MQ.onchange = function () { if (!V.session && !V.dialog && V.tour === null && !typing()) render(); };
+  if (String(location.hash).indexOf("test") >= 0 && String(location.hash).indexOf("notour") < 0) V.showTest = true;
+  var local = loadLocal(); if (local) state = local;
+  if (!state.settings.tour && !Object.keys(state.notions).length && String(location.hash).indexOf("notour") < 0) V.tour = 0; // 1er lancement : visite guidée
+  try { render(); } catch (e) { noSave = true; state = E.newState(); try { render(); } catch (e2) { app.textContent = "Erreur d'affichage. Recharge la page."; } }
+  initCloud();
+  if (!window.MQ || /debug/.test(String(location.hash))) window.__app = { get state() { return state; }, V: V, today: today, begin: beginSession, E: E, render: render, ficheHtml: ficheHtml, FICHES: FICHES, setToast: setToast };
+})();
+
+});
+</script>
+</body>
+</html>
