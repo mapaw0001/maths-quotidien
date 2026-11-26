@@ -5,7 +5,7 @@ Ce dossier sert à reconstruire le site (chiffrement des cours, service worker, 
 
 ```
 npm install
-SRC=<dossier avec index.html, engine.js, lib.js, bloc*.js, meta.js> VERSION=5.0 OUT=<sortie> COURSES_OUT=<dépôt privé des cours> node build.js
+SRC=<dossier avec index.html, engine.js, lib.js, bloc*.js, meta.js> VERSION=5.1 OUT=<sortie> COURSES_OUT=<dépôt privé des cours> node build.js
 KEY_FILE=<fichier clé> TOKEN_FILE=<fichier jeton> node make_qr.js
 ```
 

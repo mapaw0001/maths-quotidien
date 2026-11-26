@@ -1,12 +1,12 @@
 {
-  "version": "5.0",
-  "build": "bf2a78428f",
+  "version": "5.1",
+  "build": "be793cf63d",
   "date": "26/11/2026",
-  "min": "5.0",
+  "min": "5.1",
   "content": "1ba18990b627",
   "notes": [
+    "Nouveau : après le scan du QR code, l'appli te propose de s'installer comme une vraie appli (icône, plein écran).",
     "Les cours ne sont plus sur le site public : ils se téléchargent avec ton QR code.",
-    "Chiffrement renforcé (clé de 256 bits, 600 000 tours).",
     "À chaque lancement, l'appli cherche une mise à jour. Si elle existe, il faut la faire pour continuer.",
     "Une fois téléchargés, les cours restent sur le téléphone : l'appli marche sans connexion.",
     "Ta progression est gardée à chaque mise à jour."

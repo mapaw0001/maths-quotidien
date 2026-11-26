@@ -5,7 +5,7 @@ avec rappels espacés (J+3, J+7, J+14, J+30, J+90). Réservée aux étudiants du
 
 ➡️ **Page d'accueil et installation : voir `index.html` (GitHub Pages).**
 
-Version 5.0.
+Version 5.1.
 
 ## Les cours ne sont pas dans ce dépôt (même chiffrés)
 Ce dépôt contient seulement la **coquille** de l'appli. Sans le **QR code des cours**, l'appli affiche

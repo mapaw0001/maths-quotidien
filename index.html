@@ -106,7 +106,7 @@ footer{margin-top:26px;font-size:14px;color:var(--dim);border-top:1px solid var(
   fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (v) {
     $("ver").textContent = "v" + v.version; $("verdate").textContent = v.date ? "· " + v.date : "";
     $("notes").innerHTML = (v.notes || []).map(function (n) { return "<li>" + String(n).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }) + "</li>"; }).join("");
-  }).catch(function () { $("ver").textContent = "v5.0"; });
+  }).catch(function () { $("ver").textContent = "v5.1"; });
   $("force").addEventListener("click", function () {
     $("forcemsg").textContent = "Mise à jour en cours…";
     /* sans réseau, rien n'est supprimé ; sinon on vide le cache de l'appli et on recharge */

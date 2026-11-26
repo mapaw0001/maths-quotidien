@@ -7,7 +7,7 @@ const fs = require("fs"), path = require("path"), crypto = require("crypto");
 const SRC = process.env.SRC;                                         // dossier avec index.html, engine.js, lib.js, bloc*.js, meta.js
 const OUT = process.env.OUT || path.resolve("maths-pages");
 if (!SRC) { console.error("SRC manquant (dossier des sources de l'appli)"); process.exit(1); }
-const VERSION = process.env.VERSION || "5.0";
+const VERSION = process.env.VERSION || "5.1";
 const DATE = process.env.BUILD_DATE || "26/11/2026";
 const COURSES_OUT = process.env.COURSES_OUT || path.join(path.dirname(path.resolve(OUT)), "maths-cours");
 const COURSES_REPO = process.env.COURSES_REPO || "mapaw0001/maths-quotidien-cours", COURSES_PATH = process.env.COURSES_PATH || "content.enc.json", COURSES_REF = process.env.COURSES_REF || "main";
@@ -29,14 +29,30 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
 /* 1. cours chiffrés : un seul paquet, dans l'ordre des balises de index.html */
 const BLOCS = ["bloc1.js", "bloc1b.js", "bloc-elec1.js", "bloc-elec2.js", "meta.js"];
 const plain = BLOCS.map((f) => rd(path.join(SRC, f))).join("\n;\n");
-const salt = crypto.randomBytes(16), iv = crypto.randomBytes(12), ITER = 600000;        // clé de 256 bits au hasard + 600 000 tours : double verrou, même si l'un des deux était un jour affaibli
-const key = crypto.pbkdf2Sync(KEY, salt, ITER, 32, "sha256");
-const ci = crypto.createCipheriv("aes-256-gcm", key, iv);
-const ct = Buffer.concat([ci.update(plain, "utf8"), ci.final(), ci.getAuthTag()]);
-const data = ct.toString("base64");
-const id = crypto.createHash("sha256").update(data).digest("hex").slice(0, 12);
-fs.rmSync(path.join(COURSES_OUT, COURSES_PATH), { force: true }); fs.mkdirSync(COURSES_OUT, { recursive: true });
-fs.writeFileSync(path.join(COURSES_OUT, COURSES_PATH), JSON.stringify({ v: 1, alg: "AES-256-GCM", kdf: "PBKDF2-SHA256", iter: ITER, salt: salt.toString("base64"), iv: iv.toString("base64"), id, data }));
+const ITER = 600000;                                                                      // clé de 256 bits au hasard + 600 000 tours : double verrou, même si l'un des deux était un jour affaibli
+const sha12 = (t) => crypto.createHash("sha256").update(t).digest("hex").slice(0, 12);
+const coursFile = path.join(COURSES_OUT, COURSES_PATH);
+let id = null;
+/* Cours inchangés + même clé : on GARDE le fichier chiffré déjà publié (même empreinte), pour que les élèves n'aient pas de mise à jour des cours pour rien. FORCE_REENCRYPT=1 pour refaire. */
+if (!process.env.FORCE_REENCRYPT && fs.existsSync(coursFile)) {
+  try {
+    const o = JSON.parse(rd(coursFile)), raw = Buffer.from(o.data, "base64");
+    const k2 = crypto.pbkdf2Sync(KEY, Buffer.from(o.salt, "base64"), o.iter, 32, "sha256");
+    const d = crypto.createDecipheriv("aes-256-gcm", k2, Buffer.from(o.iv, "base64")); d.setAuthTag(raw.subarray(raw.length - 16));
+    const pt = Buffer.concat([d.update(raw.subarray(0, raw.length - 16)), d.final()]).toString("utf8");
+    if (pt === plain && o.id === sha12(o.data) && o.iter === ITER) { id = o.id; console.log("cours inchangés : fichier chiffré conservé (empreinte " + id + ")"); }
+  } catch (e) { /* autre clé ou cours modifiés : on rechiffre */ }
+}
+if (!id) {
+  const salt = crypto.randomBytes(16), iv = crypto.randomBytes(12);
+  const key = crypto.pbkdf2Sync(KEY, salt, ITER, 32, "sha256");
+  const ci = crypto.createCipheriv("aes-256-gcm", key, iv);
+  const ct = Buffer.concat([ci.update(plain, "utf8"), ci.final(), ci.getAuthTag()]);
+  const data = ct.toString("base64");
+  id = sha12(data);
+  fs.rmSync(coursFile, { force: true }); fs.mkdirSync(COURSES_OUT, { recursive: true });
+  fs.writeFileSync(coursFile, JSON.stringify({ v: 1, alg: "AES-256-GCM", kdf: "PBKDF2-SHA256", iter: ITER, salt: salt.toString("base64"), iv: iv.toString("base64"), id, data }));
+}
 
 /* 2. appli */
 let html = rd(path.join(SRC, "index.html"));
@@ -90,8 +106,8 @@ wr("manifest.webmanifest", JSON.stringify({
   icons: [{ src: "icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" }, { src: "icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" }, { src: "icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }]
 }, null, 2));
 const NOTES = (process.env.NOTES ? JSON.parse(process.env.NOTES) : [
+  "Nouveau : après le scan du QR code, l'appli te propose de s'installer comme une vraie appli (icône, plein écran).",
   "Les cours ne sont plus sur le site public : ils se téléchargent avec ton QR code.",
-  "Chiffrement renforcé (clé de 256 bits, 600 000 tours).",
   "À chaque lancement, l'appli cherche une mise à jour. Si elle existe, il faut la faire pour continuer.",
   "Une fois téléchargés, les cours restent sur le téléphone : l'appli marche sans connexion.",
   "Ta progression est gardée à chaque mise à jour."
@@ -114,7 +130,7 @@ wr("LICENSE", rd(path.join(__dirname, "LICENSE")));
 for (const f of ["build.js", "mq.js", "sw.js", "landing.html", "make_icons.py", "make_qr.js", "README.md", "LICENSE"]) if (fs.existsSync(path.join(__dirname, f))) wr("tools/" + f, rd(path.join(__dirname, f)));
 const dep = (n) => JSON.parse(rd(path.join(NM, n, "package.json"))).version;
 wr("tools/package.json", JSON.stringify({ name: "maths-quotidien-tools", private: true, description: "Outils de reconstruction du site (sans les cours ni la clé)", dependencies: { "@fontsource/lexend": dep("@fontsource/lexend"), "@fontsource/space-grotesk": dep("@fontsource/space-grotesk"), "@fontsource/jetbrains-mono": dep("@fontsource/jetbrains-mono"), "qrcode-generator": dep("qrcode-generator") } }, null, 2));
-wr("tools/LISEZMOI.md", "# Outils de reconstruction\n\nCe dossier sert à reconstruire le site (chiffrement des cours, service worker, page d'accueil, icônes).\n**Il ne contient ni les cours (même chiffrés), ni la clé, ni le jeton.**\n\n```\nnpm install\nSRC=<dossier avec index.html, engine.js, lib.js, bloc*.js, meta.js> VERSION=5.0 OUT=<sortie> COURSES_OUT=<dépôt privé des cours> node build.js\nKEY_FILE=<fichier clé> TOKEN_FILE=<fichier jeton> node make_qr.js\n```\n\n`build.js` écrit le site public dans OUT et le fichier de cours chiffré dans COURSES_OUT (dépôt PRIVÉ, lu par l'appli avec un jeton en lecture seule). Il garde la clé du fichier `.mq-secret/key.txt` (ou en crée une) ; `make_qr.js` fabrique le QR code (clé + jeton après le « # »).\nPour changer la clé (ancien QR code périmé) : `NEW_KEY=1`.\n");
+wr("tools/LISEZMOI.md", "# Outils de reconstruction\n\nCe dossier sert à reconstruire le site (chiffrement des cours, service worker, page d'accueil, icônes).\n**Il ne contient ni les cours (même chiffrés), ni la clé, ni le jeton.**\n\n```\nnpm install\nSRC=<dossier avec index.html, engine.js, lib.js, bloc*.js, meta.js> VERSION=5.1 OUT=<sortie> COURSES_OUT=<dépôt privé des cours> node build.js\nKEY_FILE=<fichier clé> TOKEN_FILE=<fichier jeton> node make_qr.js\n```\n\n`build.js` écrit le site public dans OUT et le fichier de cours chiffré dans COURSES_OUT (dépôt PRIVÉ, lu par l'appli avec un jeton en lecture seule). Il garde la clé du fichier `.mq-secret/key.txt` (ou en crée une) ; `make_qr.js` fabrique le QR code (clé + jeton après le « # »).\nPour changer la clé (ancien QR code périmé) : `NEW_KEY=1`.\n");
 
 /* 8. contrôle final : aucun mot du cours et aucune clé dans les fichiers publics */
 const FB = path.join(__dirname, "forbidden-words.txt");

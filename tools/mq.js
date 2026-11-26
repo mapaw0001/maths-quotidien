@@ -9,7 +9,7 @@
   var MQ = (window.MQ = { appUrl: ROOT, version: "__VERSION__", build: "__BUILD__", _deferred: null, _start: null, onchange: null });
   function changed() { try { if (MQ.onchange) MQ.onchange(); } catch (e) {} }
   var PREFIX = "maths-quotidien-";
-  var K = { txt: "mq-content", hash: "mq-content-hash", pw: "mq-pw", tok: "mq-tok", chk: "mq-lastcheck" };
+  var K = { txt: "mq-content", hash: "mq-content-hash", pw: "mq-pw", tok: "mq-tok", chk: "mq-lastcheck", inst: "mq-inst" };
   var REPO = "__COURSES_REPO__", FPATH = "__COURSES_PATH__", REF = "__COURSES_REF__";
   function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
@@ -95,6 +95,39 @@
       '<p class="note" style="font-size:17px;color:var(--text2);margin:0">Ça prend quelques secondes. Les cours sont <b style="color:var(--text)">chiffrés</b> : ils sont déchiffrés sur ton téléphone.</p></div></div>';
   }
 
+  /* ---------- « Dernière étape : installe l'appli » (juste après le scan, une seule fois) ---------- */
+  function isIOS() { try { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); } catch (e) { return false; } }
+  function afterScan(txt) {
+    if (MQ.standalone() || isIOS() || get(K.inst)) { launch(txt); return; }        // déjà une appli, iPhone (stockage séparé), ou déjà proposé : on continue
+    set(K.inst, "1"); showInstall(function () { launch(txt); });
+  }
+  function showInstall(next) {
+    var installed = false, gone = false, prev = MQ.onchange;
+    function leave() { if (gone) return; gone = true; MQ.onchange = prev; next(); }
+    function draw() {
+      if (gone) return;
+      var can = MQ.canInstall(), body, later;
+      if (installed) {
+        body = '<p role="status" style="font-size:19px;line-height:1.35;margin:0;display:flex;gap:10px;align-items:flex-start"><span aria-hidden="true">✅</span><span><b>Appli installée !</b> Ouvre l\'icône <b>« Maths »</b> sur ton écran d\'accueil : tes cours sont déjà dedans.</span></p>';
+        later = '<button class="btn sec" id="mqlater" type="button">Continuer ici</button>';
+      } else {
+        body = can ? '<button class="btn" id="mqinst" type="button">Installer l\'application</button>'
+          : step(1, "Ouvre le menu <b>⋮</b> du navigateur (Samsung Internet : <b>≡</b>).") + step(2, "Appuie sur <b>« Installer l\'application »</b> (Samsung Internet : <b>« Ajouter la page à »</b> puis <b>« Écran d\'accueil »</b>).");
+        later = '<button class="btn ghost" id="mqlater" type="button">Plus tard, continuer dans le navigateur</button>';
+      }
+      document.getElementById("app").innerHTML = SHELL + ICON +
+        '<h1 style="font-size:28px;line-height:1.1;margin:4px 0 0">' + (installed ? "C\'est installé" : "Dernière étape : installe l\'appli") + "</h1>" +
+        (installed ? "" : '<p class="note" style="font-size:18px;color:var(--text2);margin:0">Pour l\'avoir comme une <b style="color:var(--text)">vraie appli</b> : icône sur l\'écran d\'accueil, plein écran, sans la barre du navigateur. Tes cours sont <b style="color:var(--text)">déjà téléchargés</b>.</p>') +
+        body + later + "</div></div>";
+      var i = document.getElementById("mqinst");
+      if (i) i.addEventListener("click", function () { MQ.install().then(function (ok) { if (ok) installed = true; draw(); }); });
+      document.getElementById("mqlater").addEventListener("click", leave);
+    }
+    window.addEventListener("appinstalled", function () { installed = true; draw(); });
+    MQ.onchange = function () { try { if (prev) prev(); } catch (e) {} draw(); };
+    draw();
+  }
+
   function showGate(msg, opt) {
     opt = opt || {};
     var bar = document.getElementById("mqbar"); if (bar) bar.remove();                 // le bandeau de mise à jour ne doit pas cacher l'écran de scan
@@ -116,7 +149,7 @@
       var L = parseLink(inp.value);
       if (!L.key || !L.tok) { err.textContent = !inp.value.replace(/\s/g, "") ? "Colle le lien ou le code." : (L.key || L.tok) ? "Il manque une partie du lien. Colle le lien complet du QR code." : "Ce lien ou ce code n'est pas reconnu."; return; }
       go.disabled = true; go.textContent = "Téléchargement…"; err.textContent = "";
-      download(L.key, L.tok).then(function (r) { accept(L.key, L.tok, r); if (opt.back) location.reload(); else launch(r.txt); }, function (e) {
+      download(L.key, L.tok).then(function (r) { accept(L.key, L.tok, r); if (opt.back) location.reload(); else afterScan(r.txt); }, function (e) {
         go.disabled = false; go.textContent = "Télécharger les cours"; err.textContent = failMsg(e);
       });
     });
@@ -176,7 +209,7 @@
     var got = takeFromHash(), cached = get(K.txt);
     if (got && got.key && got.tok) {                              // QR code scanné : on télécharge puis on déchiffre
       showBusy();
-      download(got.key, got.tok).then(function (r) { accept(got.key, got.tok, r); launch(r.txt); }, function (e) {
+      download(got.key, got.tok).then(function (r) { accept(got.key, got.tok, r); afterScan(r.txt); }, function (e) {
         if (cached) { launch(cached); info(failMsg(e)); } else showGate(failMsg(e));
       });
       return;
