@@ -2,7 +2,8 @@ name: Fabriquer l'appli Android (APK)
 
 # À chaque mise à jour du site, GitHub fabrique l'appli Android et la publie dans « Releases ».
 # L'APK contient seulement la coquille de l'appli : jamais les cours, jamais la clé, jamais le jeton.
-# Signature : le mot de passe de la clé est dans le secret du dépôt MQ_KS_PASS (Settings > Secrets and variables > Actions).
+# Signature : la clé est créée une seule fois par ce workflow, protégée par le mot de passe que TU as mis dans le secret MQ_KS_PASS
+# (Settings > Secrets and variables > Actions). Ce mot de passe n'est connu que de GitHub et de toi.
 # Sans ce secret, le workflow vérifie seulement que l'appli se compile (rien n'est publié).
 
 on:
@@ -53,6 +54,23 @@ jobs:
           set -o pipefail
           gradle -p android --no-daemon "-PmqCode=${{ github.run_number }}" "-PmqName=$VER" assembleDebug 2>&1 | tee -a build.log
           ls -l android/app/build/outputs/apk/debug/ | tee -a build.log
+
+      - name: Clé de signature (créée une seule fois, avec TON mot de passe)
+        if: env.MQ_KS_PASS != ''
+        run: |
+          set -e
+          if [ ! -f android/signing/mq.p12 ]; then
+            mkdir -p android/signing
+            keytool -genkeypair -noprompt -keystore android/signing/mq.p12 -storetype PKCS12 -alias mq -keyalg RSA -keysize 4096 -validity 36500 -dname "CN=Maths Quotidien" -storepass:env MQ_KS_PASS -keypass:env MQ_KS_PASS
+            git config user.name build
+            git config user.email build@users.noreply.github.com
+            git add android/signing/mq.p12
+            git commit -q -m "Clé de signature de l'appli (protégée par le secret MQ_KS_PASS) [skip ci]"
+            git push -q origin HEAD:main
+            echo "clé de signature créée et rangée dans le dépôt" | tee -a build.log
+          else
+            echo "clé de signature déjà présente" | tee -a build.log
+          fi
 
       - name: Compiler et signer
         if: env.MQ_KS_PASS != ''
