@@ -50,18 +50,19 @@ footer{margin-top:26px;font-size:14px;color:var(--dim);border-top:1px solid var(
   <p style="font-size:19px"><b>1 notion par jour</b> et par matière, en 10 minutes. Des questions courtes, et l'appli te les redemande au bon moment pour que tu les retiennes.</p>
 
   <div class="stack">
-    <button class="btn" id="install" hidden>Installer l'appli</button>
-    <a class="btn sec" href="app/" id="open">Ouvrir l'appli dans le navigateur</a>
+    <a class="btn" href="https://github.com/mapaw0001/maths-quotidien/releases/latest/download/maths-quotidien.apk" id="apk" rel="noopener">Télécharger l'appli Android</a>
+    <button class="btn sec" id="install" hidden>Installer l'appli web (sans fichier)</button>
+    <a class="btn ghost" href="app/" id="open">Ouvrir dans le navigateur</a>
   </div>
   <p class="ok" id="installed" hidden>✓ L'appli est installée sur cet appareil.</p>
   <p class="note" id="insthint" role="status" hidden>Pas d'installation ? Utilise le menu <b>⋮</b> du navigateur puis <b>« Installer l'application »</b>.</p>
 
   <section class="card" aria-labelledby="h-and">
     <h2 id="h-and">Installer sur Android</h2>
-    <div class="step"><i>1</i><p>Ouvre cette page dans <b>Chrome</b> ou dans <b>Samsung Internet</b>. Choisis-en <b>un seul</b> : ta progression et tes cours ne se partagent pas entre navigateurs.</p></div>
-    <div class="step"><i>2</i><p>Appuie sur <b>« Installer l'appli »</b> en haut. Sinon :<br><b>Chrome</b> : menu <b>⋮</b> puis <b>« Installer l'application »</b>.<br><b>Samsung Internet</b> : menu <b>≡</b> puis <b>« Ajouter la page à »</b> puis <b>« Écran d'accueil »</b>.</p></div>
-    <div class="step"><i>3</i><p>Ouvre l'icône <b>Maths</b>. Elle te demande de <b>scanner le QR code</b> des cours (voir plus bas).</p></div>
-    <p class="note" style="margin:0">iPhone : Safari, bouton Partager, puis « Sur l'écran d'accueil ».</p>
+    <div class="step"><i>1</i><p>Appuie sur <b>« Télécharger l'appli Android »</b> en haut. Le fichier <b>maths-quotidien.apk</b> se télécharge.</p></div>
+    <div class="step"><i>2</i><p>Ouvre le fichier, appuie sur <b>Installer</b>. Android peut demander d'<b>autoriser</b> le navigateur à installer des applis : accepte. Si « Play Protect » avertit, choisis <b>« Installer quand même »</b> (l'appli n'est pas sur le Play Store).</p></div>
+    <div class="step"><i>3</i><p>Ouvre l'icône <b>Maths Quotidien</b>, puis <b>scanne le QR code</b> des cours avec l'appareil photo (voir plus bas).</p></div>
+    <p class="note" style="margin:0">Sans installer : <b>« Ouvrir dans le navigateur »</b> marche aussi, mais c'est une page web, pas une vraie appli. iPhone : Safari, bouton Partager, puis « Sur l'écran d'accueil ».</p>
   </section>
 
   <section class="card" aria-labelledby="h-qr">
@@ -106,7 +107,7 @@ footer{margin-top:26px;font-size:14px;color:var(--dim);border-top:1px solid var(
   fetch("version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (v) {
     $("ver").textContent = "v" + v.version; $("verdate").textContent = v.date ? "· " + v.date : "";
     $("notes").innerHTML = (v.notes || []).map(function (n) { return "<li>" + String(n).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }) + "</li>"; }).join("");
-  }).catch(function () { $("ver").textContent = "v5.1"; });
+  }).catch(function () { $("ver").textContent = "v6.0"; });
   $("force").addEventListener("click", function () {
     $("forcemsg").textContent = "Mise à jour en cours…";
     /* sans réseau, rien n'est supprimé ; sinon on vide le cache de l'appli et on recharge */

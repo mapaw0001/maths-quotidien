@@ -5,7 +5,7 @@ avec rappels espacés (J+3, J+7, J+14, J+30, J+90). Réservée aux étudiants du
 
 ➡️ **Page d'accueil et installation : voir `index.html` (GitHub Pages).**
 
-Version 5.1.
+Version 6.0.
 
 ## Les cours ne sont pas dans ce dépôt (même chiffrés)
 Ce dépôt contient seulement la **coquille** de l'appli. Sans le **QR code des cours**, l'appli affiche
@@ -14,12 +14,17 @@ Les cours sont **chiffrés** (AES-256-GCM) et rangés dans un **dépôt privé**
 après le `#` (le navigateur ne l'envoie jamais au serveur), la **clé** de déchiffrement et un **jeton en lecture seule** pour télécharger le fichier.
 Scanner le QR code télécharge les cours puis les déchiffre **sur le téléphone**. Ils restent ensuite sur l'appareil (l'appli marche hors ligne).
 
-## Installer
-1. Ouvre la page d'accueil dans **Chrome** (Android) et installe l'appli (menu ⋮ › *Installer l'application*).
-2. **Scanne le QR code** des cours avec l'appareil photo, ouvre le lien : les cours se téléchargent.
+## Installer (Android)
+1. Télécharge **maths-quotidien.apk** (page d'accueil ou onglet *Releases* de ce dépôt), ouvre-le, appuie sur **Installer** (Android demande d'autoriser le navigateur ; si « Play Protect » avertit : *Installer quand même*, l'appli n'est pas sur le Play Store).
+2. **Scanne le QR code** des cours avec l'appareil photo : le lien ouvre l'appli (ou la télécharge la 1re fois), puis les cours se téléchargent.
+L'appli web reste disponible (navigateur, iPhone) : *Ouvrir dans le navigateur*.
+
+## L'appli Android (APK)
+Le code de la coquille Android est dans `android/` (WebView : les fichiers de l'appli sont dans l'APK, **jamais les cours**). Le workflow `.github/workflows/apk.yml` la fabrique à chaque mise à jour du site et la publie dans *Releases* (signature : secret du dépôt `MQ_KS_PASS`).
+Lien du QR code : `https://…/app/#k=…&t=…` → la page propose « Ouvrir l'appli » (`mathsq://open?k=…&t=…`, avec repli : téléchargement de l'APK).
 
 ## Mises à jour (obligatoires)
-À **chaque lancement**, l'appli lit `version.json`. S'il y a une nouvelle version ou de nouveaux cours, un écran « Mise à jour obligatoire » demande de la télécharger avant de continuer (la progression est gardée).
+À **chaque lancement**, l'appli lit `version.json`. S'il y a de nouveaux cours, ils se téléchargent ; s'il y a une nouvelle version de l'appli, un écran « Mise à jour obligatoire » demande de télécharger puis d'installer la nouvelle APK avant de continuer (la progression est gardée : même signature).
 Sans connexion, on ne peut pas savoir : l'appli s'ouvre avec ce qu'elle a. Si le QR code est périmé (clé changée, jeton expiré), il faut scanner le nouveau.
 Bouton **Forcer la mise à jour** sur la page d'accueil : la progression n'est pas effacée.
 

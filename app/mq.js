@@ -1,4 +1,4 @@
-/* Maths Quotidien — accès aux cours par QR code, installation et mises à jour (version 5.1).
+/* Maths Quotidien — accès aux cours par QR code, installation et mises à jour (version 6.0).
    Les cours sont chiffrés (AES-256-GCM) et rangés dans un dépôt PRIVÉ. Le QR code contient, après le « # » du lien (que le navigateur ne
    envoie jamais au serveur), la clé de déchiffrement (k) et un jeton de lecture seule (t) pour télécharger ce fichier.
    Le dépôt public ne contient donc ni les cours (même chiffrés), ni la clé, ni le jeton. */
@@ -6,7 +6,11 @@
   "use strict";
   var BASE = location.href.replace(/[#?].*$/, "").replace(/[^/]*$/, "");       // dossier de la page (…/app/)
   var ROOT = BASE.replace(/app\/$/, "");                                         // racine du site
-  var MQ = (window.MQ = { appUrl: ROOT, version: "5.1", build: "be793cf63d", _deferred: null, _start: null, onchange: null });
+  /* Mode « vraie appli Android » (APK) : l'appli est dans le téléphone, la page est lue depuis l'APK. Les nouveautés se cherchent sur le site public (SITE). */
+  var APK = false; try { APK = /MQApp\//.test(navigator.userAgent) && !!window.AndroidMQ; } catch (e) {}
+  var SITE = "https://mapaw0001.github.io/maths-quotidien/", APK_URL = "https://github.com/mapaw0001/maths-quotidien/releases/latest/download/maths-quotidien.apk", APK_PKG = "io.github.mapaw0001.mathsquotidien";
+  var VROOT = APK ? SITE : ROOT;                                                  // où lire version.json
+  var MQ = (window.MQ = { appUrl: APK ? SITE : ROOT, apk: APK, version: "6.0", build: "e81373608e", _deferred: null, _start: null, onchange: null });
   function changed() { try { if (MQ.onchange) MQ.onchange(); } catch (e) {} }
   var PREFIX = "maths-quotidien-";
   var K = { txt: "mq-content", hash: "mq-content-hash", pw: "mq-pw", tok: "mq-tok", chk: "mq-lastcheck", inst: "mq-inst" };
@@ -15,10 +19,11 @@
   function set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
 
   /* ---------- installation ---------- */
-  MQ.standalone = function () { return (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true; };
+  MQ.standalone = function () { return APK || (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true; };
   MQ.canInstall = function () { return !!MQ._deferred; };
   window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); MQ._deferred = e; changed(); });
   window.addEventListener("appinstalled", function () { MQ._deferred = null; changed(); });
+  MQ.downloadApp = function () { try { window.AndroidMQ.downloadApp(); } catch (e) {} };          // ouvre le téléchargement de la nouvelle appli (adresse fixée dans l'APK)
   MQ.install = function () {
     var d = MQ._deferred; if (!d) return Promise.resolve(false);
     MQ._deferred = null; d.prompt();
@@ -87,7 +92,7 @@
   var ICON_UP = ICON.replace('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3m4 0v4h-4m-3 0v-3"/>', '<path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/>');
   function showBusy() {
     /* Un seul QR code : si l'appli n'est pas encore gardée sur le téléphone (1re fois), on l'installe, puis on télécharge les cours ; sinon, seulement les cours. */
-    var first = false; try { first = !!("serviceWorker" in navigator) && !navigator.serviceWorker.controller; } catch (e) {}
+    var first = false; try { first = !APK && !!("serviceWorker" in navigator) && !navigator.serviceWorker.controller; } catch (e) {}
     var row = function (ok, txt) { return '<p role="status" style="font-size:19px;line-height:1.3;margin:0;display:flex;gap:10px;align-items:flex-start"><span aria-hidden="true">' + (ok ? "✅" : "⏳") + '</span><span>' + txt + '</span></p>'; };
     document.getElementById("app").innerHTML = SHELL + ICON + '<h1 style="font-size:28px;line-height:1.1;margin:4px 0 0">' + (first ? "Installation en cours…" : "Mise à jour des cours…") + '</h1>' +
       (first ? row(false, "Installation de l'<b>application</b> sur ce téléphone (pour qu'elle marche sans connexion)…") : "") +
@@ -96,9 +101,10 @@
   }
 
   /* ---------- « Dernière étape : installe l'appli » (juste après le scan, une seule fois) ---------- */
+  function isAndroid() { try { return /Android/i.test(navigator.userAgent); } catch (e) { return false; } }
   function isIOS() { try { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); } catch (e) { return false; } }
   function afterScan(txt) {
-    if (MQ.standalone() || isIOS() || get(K.inst)) { launch(txt); return; }        // déjà une appli, iPhone (stockage séparé), ou déjà proposé : on continue
+    if (APK || MQ.standalone() || isIOS() || get(K.inst)) { launch(txt); return; }        // déjà une appli, iPhone (stockage séparé), ou déjà proposé : on continue
     set(K.inst, "1"); showInstall(function () { launch(txt); });
   }
   function showInstall(next) {
@@ -126,6 +132,30 @@
     window.addEventListener("appinstalled", function () { installed = true; draw(); });
     MQ.onchange = function () { try { if (prev) prev(); } catch (e) {} draw(); };
     draw();
+  }
+
+  /* ---------- Navigateur Android : le QR code ouvre l'appli Maths (et l'installe la 1re fois) ---------- */
+  function webChosen() { try { return sessionStorage.getItem("mq-web") === "1"; } catch (e) { return false; } }
+  function readPending() { try { var p = parseLink(sessionStorage.getItem("mq-pend") || ""); return p.key && p.tok ? p : null; } catch (e) { return null; } }
+  function intentUrl(L, fallback) {
+    return "intent://open?k=" + encodeURIComponent(L.key) + "&t=" + encodeURIComponent(L.tok) + "#Intent;scheme=mathsq;package=" + APK_PKG + ";" +
+      (fallback ? "S.browser_fallback_url=" + encodeURIComponent(APK_URL) + ";" : "") + "end";
+  }
+  MQ._intentUrl = intentUrl;
+  function showAppChoice(L) {
+    try { sessionStorage.setItem("mq-pend", "k=" + L.key + "&t=" + L.tok); } catch (e) {}
+    document.getElementById("app").innerHTML = SHELL + ICON_UP + '<h1 style="font-size:28px;line-height:1.1;margin:4px 0 0">Ouvre l\'appli Maths</h1>' +
+      '<p class="note" style="font-size:18px;color:var(--text2);margin:0">Tes cours s\'ouvrent dans l\'<b style="color:var(--text)">appli Maths Quotidien</b> : une vraie appli, avec son icône, en plein écran, et qui marche sans connexion.</p>' +
+      '<div style="margin-top:4px">' + step(1, "Appuie sur <b style=\"color:var(--text)\">« Ouvrir l\'appli »</b>.") +
+      step(2, "<b style=\"color:var(--text)\">Première fois ?</b> L\'appli se télécharge. Ouvre le fichier, appuie sur <b style=\"color:var(--text)\">Installer</b>. Android peut demander d\'<b style=\"color:var(--text)\">autoriser</b> ce navigateur : accepte.") +
+      step(3, "<b style=\"color:var(--text)\">Reviens ici</b> et appuie encore sur <b style=\"color:var(--text)\">« Ouvrir l\'appli »</b> : les cours se chargent.") + "</div>" +
+      '<a class="btn" id="mqopen" href="' + esc(intentUrl(L, true)) + '" style="text-align:center;text-decoration:none">Ouvrir l\'appli</a>' +
+      '<a class="btn sec" id="mqdl" href="' + esc(APK_URL) + '" rel="noopener" style="text-align:center;text-decoration:none">Télécharger l\'appli seulement</a>' +
+      '<button class="btn ghost" id="mqweb" type="button">Continuer dans le navigateur (sans installer)</button></div></div>';
+    document.getElementById("mqweb").addEventListener("click", function () {
+      try { sessionStorage.setItem("mq-web", "1"); sessionStorage.removeItem("mq-pend"); } catch (e) {}
+      location.hash = "k=" + L.key + "&t=" + L.tok;                     // le chargeur lit le lien et recharge la page
+    });
   }
 
   function showGate(msg, opt) {
@@ -172,7 +202,7 @@
   function preflight() {
     return new Promise(function (resolve) {
       var done = false, t = setTimeout(function () { if (!done) { done = true; resolve(null); } }, 4000);
-      fetchJson(ROOT + "version.json").then(function (v) {
+      fetchJson(VROOT + "version.json").then(function (v) {
         if (done) return; done = true; clearTimeout(t);
         var c = cmp(v.version, MQ.version), needApp = c > 0 || (c === 0 && !!v.build && v.build !== MQ.build), needContent = !!(v.content && v.content !== get(K.hash));
         resolve(needApp || needContent ? { v: v, needApp: needApp, needContent: needContent } : null);
@@ -181,6 +211,7 @@
   }
   function launch(txt) { preflight().then(function (need) { if (need) showUpdate(need); else { runContent(txt); startApp(); } }); }
   function showUpdate(need) {
+    if (APK && need.needApp) { showApkUpdate(need); return; }
     var v = need.v, notes = (v.notes || []).slice(0, 4).map(function (n) { return "<li style=\"margin:3px 0\">" + esc(n) + "</li>"; }).join("");
     document.getElementById("app").innerHTML = SHELL + ICON_UP +
       '<h1 style="font-size:30px;line-height:1.1;margin:4px 0 0">Mise à jour obligatoire</h1>' +
@@ -190,6 +221,17 @@
       '<div id="mqerr" role="alert" style="min-height:24px;color:var(--bad);font-weight:600"></div>' +
       '<button class="btn" id="mqgo" type="button">Télécharger la mise à jour</button></div></div>';
     document.getElementById("mqgo").addEventListener("click", function () { doUpdate(need); });
+  }
+  /* Dans l'APK, la nouvelle version de l'appli = une nouvelle APK à télécharger puis installer (la progression reste, même signature). Les cours se mettent à jour tout seuls au lancement suivant. */
+  function showApkUpdate(need) {
+    var v = need.v, notes = (v.notes || []).slice(0, 4).map(function (n) { return "<li style=\"margin:3px 0\">" + esc(n) + "</li>"; }).join("");
+    document.getElementById("app").innerHTML = SHELL + ICON_UP +
+      '<h1 style="font-size:30px;line-height:1.1;margin:4px 0 0">Mise à jour obligatoire</h1>' +
+      '<p class="note" style="font-size:18px;color:var(--text2);margin:0">Une <b style="color:var(--text)">nouvelle version</b> de l\'appli' + (v.version ? " (v" + esc(v.version) + ")" : "") + " est disponible. Il faut l\'installer pour continuer. <b style=\"color:var(--text)\">Ta progression est gardée.</b></p>" +
+      (notes ? '<ul class="note" style="margin:0;padding-left:20px;color:var(--text2)">' + notes + "</ul>" : "") +
+      '<div style="margin-top:4px">' + step(1, "Appuie sur <b style=\"color:var(--text)\">« Télécharger la mise à jour »</b>.") + step(2, "Ouvre le fichier téléchargé, puis appuie sur <b style=\"color:var(--text)\">Mettre à jour</b>.") + step(3, "Ouvre l\'appli : tout est comme avant.") + "</div>" +
+      '<button class="btn" id="mqgo" type="button">Télécharger la mise à jour</button></div></div>';
+    document.getElementById("mqgo").addEventListener("click", function () { MQ.downloadApp(); });
   }
   function doUpdate(need) {
     var go = document.getElementById("mqgo"), err = document.getElementById("mqerr");
@@ -205,8 +247,13 @@
   }
   MQ.run = function (fn) {
     MQ._start = fn;
-    registerSW();                                               // l'appli s'installe dès l'ouverture du lien (en même temps que les cours)
     var got = takeFromHash(), cached = get(K.txt);
+    /* Navigateur Android (pas l'appli) : le QR code ouvre l'appli Maths, ou la télécharge si elle n'est pas encore installée */
+    if (!APK && isAndroid() && !MQ.standalone() && !webChosen()) {
+      var pend = got && got.key && got.tok ? got : (!got ? readPending() : null);
+      if (pend) { showAppChoice(pend); return; }
+    }
+    registerSW();                                               // (navigateur) l'appli web s'installe dès l'ouverture du lien (en même temps que les cours)
     if (got && got.key && got.tok) {                              // QR code scanné : on télécharge puis on déchiffre
       showBusy();
       download(got.key, got.tok).then(function (r) { accept(got.key, got.tok, r); afterScan(r.txt); }, function (e) {
@@ -219,7 +266,7 @@
   };
 
   /* ---------- service worker ---------- */
-  function registerSW() { try { if ("serviceWorker" in navigator) navigator.serviceWorker.register(ROOT + "sw.js", { scope: ROOT }).catch(function () {}); } catch (e) {} }
+  function registerSW() { try { if (!APK && "serviceWorker" in navigator) navigator.serviceWorker.register(ROOT + "sw.js", { scope: ROOT }).catch(function () {}); } catch (e) {} }
 
   /* ---------- mises à jour ---------- */
   function cmp(a, b) { var x = String(a).split(".").map(Number), y = String(b).split(".").map(Number), i; for (i = 0; i < 3; i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d > 0 ? 1 : -1; } return 0; }
@@ -249,7 +296,7 @@
     document.getElementById("mqno").onclick = function () { d.remove(); };
   }
   MQ.checkUpdate = function (manual) {
-    return fetchJson(ROOT + "version.json").then(function (v) {
+    return fetchJson(VROOT + "version.json").then(function (v) {
       set(K.chk, String(Date.now()));
       try { if ("serviceWorker" in navigator) navigator.serviceWorker.getRegistration(ROOT).then(function (r) { if (r) r.update().catch(function () {}); }, function () {}); } catch (e) {}   // le service worker prépare la nouvelle version tout seul
       var c = cmp(v.version, MQ.version);
@@ -281,7 +328,16 @@
     if (window.caches) p.push(caches.keys().then(function (ks) { return Promise.all(ks.filter(function (k) { return k.indexOf(PREFIX) === 0; }).map(function (k) { return caches.delete(k); })); }));
     return Promise.all(p).catch(function () {});
   }
+  function apkUpdate() {
+    return fetchJson(VROOT + "version.json").then(function (v) { return v; }, function () { return null; }).then(function (v) {
+      if (!v) return false;
+      var c = cmp(v.version, MQ.version);
+      if (c > 0 || (c === 0 && !!v.build && v.build !== MQ.build)) { MQ.downloadApp(); return true; }
+      return refreshContent(v).catch(function () {}).then(function () { location.reload(); return true; });
+    });
+  }
   MQ.forceUpdate = function (hard) {
+    if (APK) return apkUpdate();
     return fetch(ROOT + "version.json?t=" + Date.now(), { cache: "no-store" }).then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.json(); }).then(function (v) { return v; }, function () { return null; }).then(function (v) {
       if (!v) return false;
       return refreshContent().catch(function () {}).then(function () {
@@ -296,6 +352,7 @@
   };
   /* après un « forcer » : si la page affichée est encore l'ancienne, un seul rechargement une fois les fichiers à jour prêts */
   (function afterRepair() {
+    if (APK) return;
     var f = null; try { f = sessionStorage.getItem("mq-repair"); sessionStorage.removeItem("mq-repair"); } catch (e) {}
     if (!f || !("serviceWorker" in navigator)) return;
     navigator.serviceWorker.ready.then(function () { return fetchJson(ROOT + "version.json"); }).then(function (v) {

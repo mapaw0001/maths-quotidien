@@ -7,11 +7,13 @@ const fs = require("fs"), path = require("path"), crypto = require("crypto");
 const SRC = process.env.SRC;                                         // dossier avec index.html, engine.js, lib.js, bloc*.js, meta.js
 const OUT = process.env.OUT || path.resolve("maths-pages");
 if (!SRC) { console.error("SRC manquant (dossier des sources de l'appli)"); process.exit(1); }
-const VERSION = process.env.VERSION || "5.1";
+const VERSION = process.env.VERSION || "6.0";
 const DATE = process.env.BUILD_DATE || "26/11/2026";
 const COURSES_OUT = process.env.COURSES_OUT || path.join(path.dirname(path.resolve(OUT)), "maths-cours");
 const COURSES_REPO = process.env.COURSES_REPO || "mapaw0001/maths-quotidien-cours", COURSES_PATH = process.env.COURSES_PATH || "content.enc.json", COURSES_REF = process.env.COURSES_REF || "main";
 if (path.resolve(COURSES_OUT) === path.resolve(OUT) || path.resolve(COURSES_OUT).startsWith(path.resolve(OUT) + path.sep)) { console.error("COURSES_OUT ne doit pas être dans OUT (dépôt public)"); process.exit(1); }
+const SITE_URL = process.env.SITE_URL || "https://mapaw0001.github.io/maths-quotidien/", APK_ID = "io.github.mapaw0001.mathsquotidien";
+const APK_URL = process.env.APK_URL || "https://github.com/mapaw0001/maths-quotidien/releases/latest/download/maths-quotidien.apk";
 const KEY_FILE = process.env.KEY_FILE || path.join(path.dirname(path.resolve(OUT)), ".mq-secret", "key.txt");
 if (path.resolve(KEY_FILE).startsWith(path.resolve(OUT) + path.sep)) { console.error("KEY_FILE ne doit pas être dans OUT"); process.exit(1); }
 let KEY = process.env.MQ_KEY;
@@ -75,7 +77,7 @@ if (/googleapis|gstatic/.test(html)) throw new Error("appel externe restant dans
 wr("app/index.html", html);
 wr("app/engine.js", rd(path.join(SRC, "engine.js")));
 wr("app/lib.js", rd(path.join(SRC, "lib.js")));
-wr("app/mq.js", sub(rd(path.join(__dirname, "mq.js"))).replace(/__COURSES_REPO__/g, COURSES_REPO).replace(/__COURSES_PATH__/g, COURSES_PATH).replace(/__COURSES_REF__/g, COURSES_REF));
+wr("app/mq.js", sub(rd(path.join(__dirname, "mq.js"))).replace(/__COURSES_REPO__/g, COURSES_REPO).replace(/__COURSES_PATH__/g, COURSES_PATH).replace(/__COURSES_REF__/g, COURSES_REF).replace(/__SITE_URL__/g, SITE_URL).replace(/__APK_URL__/g, APK_URL).replace(/__APK_ID__/g, APK_ID));
 
 /* 3. polices hébergées */
 const FONTS = [["lexend", "Lexend", [400, 500, 600, 700]], ["space-grotesk", "Space Grotesk", [600, 700]], ["jetbrains-mono", "JetBrains Mono", [500, 700]]];
@@ -95,7 +97,7 @@ for (const [pkg, fam, ws] of FONTS) {
 wr("fonts/fonts.css", css); wr("fonts/LICENSES.txt", lic);
 
 /* 4. page d'accueil, icônes */
-wr("index.html", sub(rd(path.join(__dirname, "landing.html"))));
+wr("index.html", sub(rd(path.join(__dirname, "landing.html"))).replace(/__APK_URL__/g, APK_URL));
 wr("THIRD_PARTY.txt", "Polices : voir fonts/LICENSES.txt (SIL Open Font License 1.1)\nQR code : qrcode-generator (MIT), utilisé seulement dans tools/make_qr.js\n");
 require("child_process").execFileSync("python3", [path.join(__dirname, "make_icons.py"), path.join(OUT, "icons")]);
 
@@ -106,9 +108,10 @@ wr("manifest.webmanifest", JSON.stringify({
   icons: [{ src: "icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" }, { src: "icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" }, { src: "icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }]
 }, null, 2));
 const NOTES = (process.env.NOTES ? JSON.parse(process.env.NOTES) : [
-  "Nouveau : après le scan du QR code, l'appli te propose de s'installer comme une vraie appli (icône, plein écran).",
-  "Les cours ne sont plus sur le site public : ils se téléchargent avec ton QR code.",
-  "À chaque lancement, l'appli cherche une mise à jour. Si elle existe, il faut la faire pour continuer.",
+  "Nouveau : vraie appli Android (fichier APK) : icône, plein écran, l'appli est dans le téléphone.",
+  "Scanne le QR code : il ouvre l'appli (ou la télécharge la 1re fois), puis les cours se téléchargent.",
+  "Les cours ne sont pas dans l'appli ni sur le site public : ils se téléchargent avec ton QR code.",
+  "À chaque lancement, l'appli cherche une mise à jour. Si elle existe, il faut la faire pour continuer (nouvelle appli à installer, tes cours et ta progression restent).",
   "Une fois téléchargés, les cours restent sur le téléphone : l'appli marche sans connexion.",
   "Ta progression est gardée à chaque mise à jour."
 ]);
@@ -126,6 +129,10 @@ wr(".nojekyll", "");
 wr("README.md", sub(rd(path.join(__dirname, "README.md"))));
 wr("LICENSE", rd(path.join(__dirname, "LICENSE")));
 
+/* 6b. appli Android (coquille WebView) et recette de fabrication GitHub : le code de l'APK est public, les cours n'y sont jamais */
+const copyTree = (from, to) => { for (const e of fs.readdirSync(from, { withFileTypes: true })) { const a = path.join(from, e.name), z = path.join(to, e.name); if (e.isDirectory()) { fs.mkdirSync(z, { recursive: true }); copyTree(a, z); } else { fs.mkdirSync(path.dirname(z), { recursive: true }); fs.copyFileSync(a, z); } } };
+if (fs.existsSync(path.join(__dirname, "android-src"))) copyTree(path.join(__dirname, "android-src"), OUT);
+
 /* 7. outils de reconstruction (sans les cours, sans la clé, sans la liste des mots interdits) */
 for (const f of ["build.js", "mq.js", "sw.js", "landing.html", "make_icons.py", "make_qr.js", "README.md", "LICENSE"]) if (fs.existsSync(path.join(__dirname, f))) wr("tools/" + f, rd(path.join(__dirname, f)));
 const dep = (n) => JSON.parse(rd(path.join(NM, n, "package.json"))).version;
@@ -138,7 +145,7 @@ const words = fs.existsSync(FB) ? rd(FB).split(/\r?\n/).map((x) => x.trim().toLo
 const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
 const files = walk(OUT), bad = [];
 for (const f of files) {
-  if (/\.(png|woff2)$/.test(f)) continue;
+  if (/\.(png|woff2|p12)$/.test(f)) continue;
   const t = rd(f), tl = t.toLowerCase();
   if (t.includes(KEY)) bad.push(path.relative(OUT, f) + " : contient la clé");
   if (/content\.enc\.json$/.test(f) || /"alg"\s*:\s*"aes-256-gcm"/.test(tl)) bad.push(path.relative(OUT, f) + " : fichier de cours chiffré dans le dépôt public");

@@ -1,13 +1,14 @@
 {
-  "version": "5.1",
-  "build": "be793cf63d",
+  "version": "6.0",
+  "build": "e81373608e",
   "date": "26/11/2026",
-  "min": "5.1",
+  "min": "6.0",
   "content": "1ba18990b627",
   "notes": [
-    "Nouveau : après le scan du QR code, l'appli te propose de s'installer comme une vraie appli (icône, plein écran).",
-    "Les cours ne sont plus sur le site public : ils se téléchargent avec ton QR code.",
-    "À chaque lancement, l'appli cherche une mise à jour. Si elle existe, il faut la faire pour continuer.",
+    "Nouveau : vraie appli Android (fichier APK) : icône, plein écran, l'appli est dans le téléphone.",
+    "Scanne le QR code : il ouvre l'appli (ou la télécharge la 1re fois), puis les cours se téléchargent.",
+    "Les cours ne sont pas dans l'appli ni sur le site public : ils se téléchargent avec ton QR code.",
+    "À chaque lancement, l'appli cherche une mise à jour. Si elle existe, il faut la faire pour continuer (nouvelle appli à installer, tes cours et ta progression restent).",
     "Une fois téléchargés, les cours restent sur le téléphone : l'appli marche sans connexion.",
     "Ta progression est gardée à chaque mise à jour."
   ]
