@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -38,6 +40,10 @@ public class MainActivity extends Activity {
 
     static final Pattern KEY = Pattern.compile("[A-Za-z0-9_-]{20,80}");
     static final Pattern TOKEN = Pattern.compile("[A-Za-z0-9_]{30,200}");
+
+    /** La page ne peut parler qu'à elle-même, à api.github.com (cours) et au site public (numéro de version) : limite les fuites si une page était piégée. */
+    static final String CSP = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; "
+            + "connect-src 'self' https://api.github.com https://mapaw0001.github.io; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'";
 
     private WebView web;
 
@@ -80,9 +86,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Uri d = intent == null ? null : intent.getData();
-        if (d != null && web != null) {
-            web.loadUrl(urlFor(intent));
+        if (web != null) {
+            String u = urlFor(intent);
+            if (u.indexOf('#') >= 0) web.loadUrl(u);      // seulement un vrai lien de QR code (clé + jeton valides)
         }
         setIntent(new Intent());
     }
@@ -113,6 +119,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         if (web != null) {
             web.removeJavascriptInterface("AndroidMQ");
+            if (web.getParent() instanceof ViewGroup) ((ViewGroup) web.getParent()).removeView(web);
             web.destroy();
             web = null;
         }
@@ -165,6 +172,7 @@ public class MainActivity extends Activity {
             String m = mime(rel);
             Map<String, String> h = new HashMap<String, String>();
             h.put("Cache-Control", "no-cache");
+            if (m.equals("text/html")) h.put("Content-Security-Policy", CSP);
             return new WebResourceResponse(m, isText(m) ? "utf-8" : null, 200, "OK", h, in);
         } catch (IOException e) {
             return notFound();
@@ -175,9 +183,15 @@ public class MainActivity extends Activity {
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
             Uri u = request.getUrl();
-            if (!HOST.equals(u.getHost())) return null;          // api.github.com, github.io : réseau normal
+            if (!HOST.equals(u.getHost()) || !"https".equals(u.getScheme())) return null;   // api.github.com, github.io : réseau normal
             if (!"GET".equalsIgnoreCase(request.getMethod())) return notFound();
             return serve(u);
+        }
+
+        @Override
+        public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+            recreate();                                                                       // Android a arrêté le moteur web (mémoire) : on repart proprement
+            return true;
         }
 
         @Override
@@ -190,7 +204,7 @@ public class MainActivity extends Activity {
     }
 
     /** Seul pont vers la page : lancer le téléchargement de la nouvelle appli (adresse fixée ci-dessus). */
-    private class Bridge {
+    public class Bridge {
         @JavascriptInterface
         public void downloadApp() {
             runOnUiThread(new Runnable() {

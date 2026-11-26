@@ -1,6 +1,6 @@
-/* Service worker de Maths Quotidien — version 6.0, build e81373608e (le nom du cache change à chaque modification des fichiers). */
+/* Service worker de Maths Quotidien — version 6.0, build 78c5ac882a (le nom du cache change à chaque modification des fichiers). */
 var PREFIX = "maths-quotidien-";
-var CACHE = PREFIX + "e81373608e";
+var CACHE = PREFIX + "78c5ac882a";
 var APP_PATH = new URL("app/", self.registration.scope).pathname;
 var ASSETS = ["./","index.html","app/","app/index.html","app/engine.js","app/lib.js","app/mq.js","manifest.webmanifest","icons/icon-192.png","icons/icon-512.png","icons/apple-touch-icon.png","fonts/fonts.css","fonts/lexend-latin-400-normal.woff2","fonts/lexend-latin-500-normal.woff2","fonts/lexend-latin-600-normal.woff2","fonts/lexend-latin-700-normal.woff2","fonts/space-grotesk-latin-600-normal.woff2","fonts/space-grotesk-latin-700-normal.woff2","fonts/jetbrains-mono-latin-500-normal.woff2","fonts/jetbrains-mono-latin-700-normal.woff2"];
 self.addEventListener("install", function (e) {

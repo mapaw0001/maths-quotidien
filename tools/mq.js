@@ -10,7 +10,7 @@
   var APK = false; try { APK = /MQApp\//.test(navigator.userAgent) && !!window.AndroidMQ; } catch (e) {}
   var SITE = "__SITE_URL__", APK_URL = "__APK_URL__", APK_PKG = "__APK_ID__";
   var VROOT = APK ? SITE : ROOT;                                                  // où lire version.json
-  var MQ = (window.MQ = { appUrl: APK ? SITE : ROOT, apk: APK, version: "__VERSION__", build: "__BUILD__", _deferred: null, _start: null, onchange: null });
+  var MQ = (window.MQ = { appUrl: APK ? "" : ROOT, apk: APK, version: "__VERSION__", build: "__BUILD__", _deferred: null, _start: null, onchange: null });
   function changed() { try { if (MQ.onchange) MQ.onchange(); } catch (e) {} }
   var PREFIX = "maths-quotidien-";
   var K = { txt: "mq-content", hash: "mq-content-hash", pw: "mq-pw", tok: "mq-tok", chk: "mq-lastcheck", inst: "mq-inst" };
@@ -204,7 +204,7 @@
       var done = false, t = setTimeout(function () { if (!done) { done = true; resolve(null); } }, 4000);
       fetchJson(VROOT + "version.json").then(function (v) {
         if (done) return; done = true; clearTimeout(t);
-        var c = cmp(v.version, MQ.version), needApp = c > 0 || (c === 0 && !!v.build && v.build !== MQ.build), needContent = !!(v.content && v.content !== get(K.hash));
+        var c = cmp(v.version, MQ.version), needApp = APK ? cmp(v.min || v.version, MQ.version) > 0 : (c > 0 || (c === 0 && !!v.build && v.build !== MQ.build)), needContent = !!(v.content && v.content !== get(K.hash));
         resolve(needApp || needContent ? { v: v, needApp: needApp, needContent: needContent } : null);
       }, function () { if (!done) { done = true; clearTimeout(t); resolve(null); } });
     });
@@ -300,7 +300,7 @@
       set(K.chk, String(Date.now()));
       try { if ("serviceWorker" in navigator) navigator.serviceWorker.getRegistration(ROOT).then(function (r) { if (r) r.update().catch(function () {}); }, function () {}); } catch (e) {}   // le service worker prépare la nouvelle version tout seul
       var c = cmp(v.version, MQ.version);
-      var res = { app: c > 0 || (c === 0 && !!v.build && v.build !== MQ.build), content: false, relock: false, version: v.version, notes: v.notes || [] };
+      var res = { app: APK ? c > 0 : (c > 0 || (c === 0 && !!v.build && v.build !== MQ.build)), content: false, relock: false, version: v.version, notes: v.notes || [] };
       return refreshContent(v).then(function (changed) { res.content = !!changed; }, function (e) { if (e && (e.relock || e.auth)) res.relock = true; }).then(function () {
         if (!manual) { if (res.relock) banner(v.version, true); else if (res.app || res.content) banner(v.version, false); }
         return res;
@@ -332,7 +332,7 @@
     return fetchJson(VROOT + "version.json").then(function (v) { return v; }, function () { return null; }).then(function (v) {
       if (!v) return false;
       var c = cmp(v.version, MQ.version);
-      if (c > 0 || (c === 0 && !!v.build && v.build !== MQ.build)) { MQ.downloadApp(); return true; }
+      if (c > 0) { MQ.downloadApp(); return true; }
       return refreshContent(v).catch(function () {}).then(function () { location.reload(); return true; });
     });
   }

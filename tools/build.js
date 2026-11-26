@@ -121,7 +121,7 @@ const hh = crypto.createHash("sha256");
 for (const a of assets.filter((x) => !x.endsWith("/"))) { hh.update(a + "\0"); hh.update(fs.readFileSync(path.join(OUT, a))); }
 const BUILD = hh.digest("hex").slice(0, 10);
 const mqf = path.join(OUT, "app/mq.js"); fs.writeFileSync(mqf, fs.readFileSync(mqf, "utf8").replace(/__BUILD__/g, BUILD));
-wr("version.json", JSON.stringify({ version: VERSION, build: BUILD, date: DATE, min: VERSION, content: id, notes: NOTES }, null, 2));
+wr("version.json", JSON.stringify({ version: VERSION, build: BUILD, date: DATE, min: process.env.MIN || VERSION, content: id, notes: NOTES }, null, 2));
 wr("sw.js", sub(rd(path.join(__dirname, "sw.js"))).replace(/__BUILD__/g, BUILD).replace("__ASSETS__", JSON.stringify(assets)));
 wr(".nojekyll", "");
 

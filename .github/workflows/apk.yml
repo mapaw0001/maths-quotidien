@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      MQ_KS_PASS: ${{ secrets.MQ_KS_PASS }}
+      HAS_KS: ${{ secrets.MQ_KS_PASS != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -49,16 +49,19 @@ jobs:
           { echo "SDK platforms :"; ls "$ANDROID_HOME/platforms"; echo "build-tools :"; ls "$ANDROID_HOME/build-tools"; echo "fichiers de l'appli :"; find "$A" -type f | wc -l; } | tee build.log
 
       - name: Compiler (essai, sans clé de signature)
-        if: env.MQ_KS_PASS == ''
+        if: env.HAS_KS != 'true'
         run: |
           set -o pipefail
-          gradle -p android --no-daemon "-PmqCode=${{ github.run_number }}" "-PmqName=$VER" assembleDebug 2>&1 | tee -a build.log
+          gradle -p android --no-daemon "-PmqCode=$(( $(date +%s) / 60 ))" "-PmqName=$VER" assembleDebug 2>&1 | tee -a build.log
           ls -l android/app/build/outputs/apk/debug/ | tee -a build.log
 
       - name: Clé de signature (créée une seule fois, avec TON mot de passe)
-        if: env.MQ_KS_PASS != ''
+        if: env.HAS_KS == 'true'
+        env:
+          MQ_KS_PASS: ${{ secrets.MQ_KS_PASS }}
         run: |
           set -e
+          if [ "${#MQ_KS_PASS}" -lt 16 ]; then echo "ERREUR : le mot de passe MQ_KS_PASS est trop court (16 signes minimum, 20 conseillés). Change le secret puis relance." | tee -a build.log; exit 1; fi
           if [ ! -f android/signing/mq.p12 ]; then
             mkdir -p android/signing
             keytool -genkeypair -noprompt -keystore android/signing/mq.p12 -storetype PKCS12 -alias mq -keyalg RSA -keysize 4096 -validity 36500 -dname "CN=Maths Quotidien" -storepass:env MQ_KS_PASS -keypass:env MQ_KS_PASS
@@ -73,21 +76,23 @@ jobs:
           fi
 
       - name: Compiler et signer
-        if: env.MQ_KS_PASS != ''
+        if: env.HAS_KS == 'true'
         env:
+          MQ_KS_PASS: ${{ secrets.MQ_KS_PASS }}
           MQ_KS_FILE: ${{ github.workspace }}/android/signing/mq.p12
         run: |
           set -o pipefail
-          gradle -p android --no-daemon "-PmqCode=${{ github.run_number }}" "-PmqName=$VER" assembleRelease 2>&1 | tee -a build.log
+          gradle -p android --no-daemon "-PmqCode=$(( $(date +%s) / 60 ))" "-PmqName=$VER" assembleRelease 2>&1 | tee -a build.log
           cp android/app/build/outputs/apk/release/app-release.apk maths-quotidien.apk
           BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
           "$BT/apksigner" verify --print-certs maths-quotidien.apk 2>&1 | tee -a build.log
           ls -l maths-quotidien.apk | tee -a build.log
 
       - name: Publier l'appli
-        if: env.MQ_KS_PASS != ''
+        if: env.HAS_KS == 'true' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
+          target_commitish: ${{ github.sha }}
           tag_name: apk-${{ github.run_number }}
           name: Maths Quotidien v${{ env.VER }} (appli Android)
           files: maths-quotidien.apk
