@@ -2,6 +2,9 @@ plugins {
     id 'com.android.application'
 }
 
+def mqCode = (project.findProperty('mqCode') ?: '1').toString().toInteger()
+def mqName = (project.findProperty('mqName') ?: '0.0').toString()
+
 android {
     namespace 'io.github.mapaw0001.mathsquotidien'
     compileSdk 34
@@ -10,8 +13,8 @@ android {
         applicationId 'io.github.mapaw0001.mathsquotidien'
         minSdk 24
         targetSdk 34
-        versionCode (project.findProperty('mqCode') ?: '1').toInteger()
-        versionName (project.findProperty('mqName') ?: '0.0')
+        versionCode mqCode
+        versionName mqName
     }
 
     signingConfigs {
